@@ -5,4 +5,4 @@ costoDiario = float(input('Costo diario de la habitacion: '))
 
 total = costoDiario * dias
 
-print(f'Total a pagar {pagar}')
+print(f'Total a pagar {total}')
