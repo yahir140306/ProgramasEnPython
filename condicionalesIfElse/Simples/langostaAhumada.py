@@ -5,7 +5,7 @@ costo = 0
 
 if numeroPersonas > 300:
     costo = 75
-if else numeroPersonas > 200:
+elif numeroPersonas > 200:
     costo = 85
 else:
     costo = 95

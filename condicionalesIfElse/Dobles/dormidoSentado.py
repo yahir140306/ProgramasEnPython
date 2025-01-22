@@ -9,7 +9,7 @@ actividad = input('Ingrese la actividad (dormido/sentado): ')
 
 if actividad == 'dormido':
     calorias = tiempo * caloriasDormido
-if else actividad == 'sentado':
+elif actividad == 'sentado':
     calorias = tiempo * caloriasSentado
 else: 
     print('Actividad no válida')
