@@ -14,4 +14,4 @@ if (hora >= 0 & hora <= 23) & (minutos >= 0 & minutos <= 59) & (segundos >= 0 & 
         hora = hora + 1
     if hora == 24:
         hora = 0
-    print('La hora en el segundo siguiente es: ', hora, ':', minutos, ':', segundos)
+    print(f'La hora en el segundo siguiente es: , {hora}, :, {minutos}, :, {segundos}')
