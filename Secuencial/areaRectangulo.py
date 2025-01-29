@@ -1,4 +1,5 @@
 print ('Calcular area del rectangulo.')
+
 base = int (input('Ingrese la base: '))
 altura = int (input('Ingrese la altura: '))
 

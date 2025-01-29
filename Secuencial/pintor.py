@@ -5,4 +5,4 @@ precio = float(input('Ingrese el valor de cada metro cuadrado: '))
 
 cobrar = metrosCuadrados * precio 
 
-print(f'Precio a cobrar es: {conbrar}')
+print(f'Precio a cobrar es: {cobrar}')
