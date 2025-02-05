@@ -1,4 +1,4 @@
-#!Crear una aplicacion que lea una fecha de nacimiento y calcule la edad en años, meses y dias. Sin utilizar datetiemp para principiantes
+# !Crear una aplicacion que lea una fecha de nacimiento y calcule la edad en años, meses y dias. Sin utilizar datetiemp para principiantes
 
 diaNacimiento = int(input('Ingrese el dia de nacimiento: '))
 mesNacimiento = int(input('Ingrese el mes de nacimiento: '))
