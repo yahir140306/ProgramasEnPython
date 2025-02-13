@@ -9,7 +9,7 @@ if tarjeta == 'S':
     print('El descuento es de: ', descuento)
     print('El total a pagar es: ', total)
 
-if else tarjeta == 'N':
+elif tarjeta == 'N':
     descuento = compra * 0.02
     total = compra - descuento
     print('El descuento es de: ', descuento)

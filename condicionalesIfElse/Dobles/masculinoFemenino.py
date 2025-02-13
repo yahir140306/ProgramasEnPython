@@ -2,7 +2,13 @@ print('Crear una aplicación y diagrama de flujo que el usuario introduzca ‘F�
 
 sexo = input('Ingrese su sexo (F/M): ')
 
+sexo = sexo.upper()
+
 if sexo == 'M':
     print('Masculino')
-else:
+
+elif sexo == 'F':
     print('Femenino')
+
+else:
+    print('Sexo no válido')

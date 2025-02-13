@@ -1,0 +1,1 @@
+print('El profesor de la materia de programación desea saber cuántos alumnos tienen calificación de 10, cuántos de 9 y cuántos de 8, además cuántos no aprobaron. Cantidad de calificaciones a leer 30 Usar--> Ciclo While ')
