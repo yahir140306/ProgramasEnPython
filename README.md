@@ -2,9 +2,14 @@
 Estructura
 
 ├───Secuencial
+
 ├───multiplesSwitch
+
 ├───condicionalesIfElse
+
 │   ├───Simples
+
 │   └───Dobles
+
 └───ciclo
 
