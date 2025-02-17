@@ -1,12 +1,13 @@
-#Ejercicios de practicas de programacion basica con el lenguaje d programacion python - UTSH
+## Ejercicios de practicas de programacion basica con el lenguaje d programacion python - UTSH
 
-#Estructura:
+## Estructura:
 
 ```text
-├─── Secuencial
-├─── multiplesSwitch
-├─── condicionalesIfElse
-│   ├─── Simples
-│   └─── Dobles
-└─── ciclo
+/
+├─── Secuencial/
+├─── multiplesSwitch/
+├─── condicionalesIfElse/
+│   ├─── Simples/
+│   └─── Dobles/
+└─── ciclo/
 ```
