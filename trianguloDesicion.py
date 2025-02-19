@@ -17,3 +17,5 @@ elif (
 
 else:
     print("Es un triangulo escaleno.")
+
+# positivo y negativo , y  siguiente segundo 
