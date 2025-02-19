@@ -3,18 +3,15 @@ import time
 import sched
 import timeit
 
-
 ## !Timer con threading.Timer (Temporizador simple)
 def mostrar_mensaje():
     print("¡Tiempo cumplido!")
-
 
 ## Crear un temporizador que ejecuta `mostrar_mensaje` después de 5 segundos
 temporizador = threading.Timer(5.0, mostrar_mensaje)
 
 ## Iniciar el temporizador
 temporizador.start()
-
 
 ## !Timer con time.sleep() (Pausas en la ejecución)
 print("Esperando 3 segundos...")
@@ -25,10 +22,8 @@ print("¡Tiempo cumplido!")
 # Crear un programador
 scheduler = sched.scheduler(time.time, time.sleep)
 
-
 def tarea():
     print("¡Ejecutando tarea programada!")
-
 
 # Programar tarea después de 4 segundos
 scheduler.enter(4, 1, tarea)
