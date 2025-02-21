@@ -2,7 +2,7 @@ print(
     " “El náufrago satisfecho” ofrece hamburguesas sencillas, dobles y triples, las cuales tienen un costo de $20.00, $25.00 y $28.00 respectivamente. La empresa acepta tarjetas de crédito con un cargo de 5 % sobre la compra. Suponiendo que los clientes adquieren sólo un tipo de hamburguesa, realice la aplicación y diagrama de flujo para determinar cuánto debe pagar una persona por N hamburguesas."
 )
 
-tiposHamburgesas = int(input("Ingrese el número de hamburguesas: "))
+tiposHamburgesas = int(input("Ingrese el tipos de hamburguesas: "))
 costo = 0
 
 cantidadHambuguesas = int(input("Ingrese el número de hamburguesas: "))

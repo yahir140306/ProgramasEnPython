@@ -9,6 +9,6 @@ if lapices >= 1000:
     costo = 0.85
     
 else:
-    costo = 0.95
+    costo = 0.90
 
 print(f"El costo total es de ${lapices * costo}")
