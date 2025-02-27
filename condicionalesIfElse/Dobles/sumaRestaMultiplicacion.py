@@ -1,5 +1,5 @@
 print(
-    " Crear una aplicación que tras leer 2 valores cumpla las siguientes condiciones. \n 1.- Si son los números iguales que los sume. \n 2.- Si el primer valor es mayor al segundo que realice una resta. \n 3.- Si el segundo es mayor al primer valor que realice una multiplicación. Realiza el pseudocódigo o algoritmo y diagrama de flujo para su solución."
+    "Crear una aplicación que tras leer 2 valores cumpla las siguientes condiciones. \n 1.- Si son los números iguales que los sume. \n 2.- Si el primer valor es mayor al segundo que realice una resta. \n 3.- Si el segundo es mayor al primer valor que realice una multiplicación. Realiza el pseudocódigo o algoritmo y diagrama de flujo para su solución."
 )
 
 valor1 = int(input("Ingrese el primer valor: "))
