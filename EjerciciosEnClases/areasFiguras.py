@@ -2,26 +2,20 @@ print(
     "Crear una aplicacion con funciones que calcule el area de las siguientes figuras: Trapecio, Pentagono, Triangulo, Circulo, Cuadrado. \nQue muestre un menu el cual permita seleccionar la figura a calcular el area y solicite los valores requeridas. \n"
 )
 
-
 def areaTrapecio(baseMayor, baseMenor, altura):
     return ((baseMayor + baseMenor) * altura) / 2
-
 
 def areaPentagono(perimetro, apotema):
     return (perimetro * apotema) / 2
 
-
 def areaTriangulo(base, altura):
     return (base * altura) / 2
-
 
 def areaCirculo(radio):
     return 3.1416 * (radio ** 2)
 
-
 def areaCuadrado(lado):
     return lado ** 2
-
 
 def menu():
     while True:
