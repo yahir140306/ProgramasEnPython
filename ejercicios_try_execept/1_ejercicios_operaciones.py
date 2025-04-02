@@ -18,7 +18,8 @@ def multiplicacion(a: float, b: float):
 
 def division(a: float, b: float):
     try:
-        return a / b
+        resultado = a / b
+        return resultado
     except TypeError:
         print("Error: Los valores deben ser números.")
     except ZeroDivisionError:
@@ -92,13 +93,15 @@ def menu_operaciones_basicas():
                 print(f"El producto es: {resultado}")
             elif opcion == 4:
                 resultado = division(valor1, valor2)
-                print(f"El cociente es: {resultado}")
+                if resultado is not None:
+                    print('No se puede dividir entre cero')
+                else:    
+                    print(f"El cociente es: {resultado}")
 
         except ValueError as ve:
             print(f"Error: {ve}")
         except Exception as e:
             print(f"Error inesperado: {e}")
-
 
 def menu_operaciones_exponenciales():
     while True:
@@ -111,7 +114,7 @@ def menu_operaciones_exponenciales():
             if opcion == 3:
                 break
             if opcion < 1 or opcion > 3:
-                raise ValueError("Opción no válida.")
+                print(ValueError("Opción no válida.")) 
 
             valor = float(input("Introduce el valor: "))
 
@@ -127,7 +130,6 @@ def menu_operaciones_exponenciales():
             print(f"Error: {ve}")
         except Exception as e:
             print(f"Error inesperado: {e}")
-
 
 def menu_operaciones_factoriales():
     while True:
@@ -151,7 +153,6 @@ def menu_operaciones_factoriales():
             print(f"Error: {ve}")
         except Exception as e:
             print(f"Error inesperado: {e}")
-
 
 def menu_operaciones_raices():
     while True:
