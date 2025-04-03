@@ -27,12 +27,16 @@ def agregar_elemento():
 def eliminar_elemento():
     lista = input("Ingrese el dato a eliminar: ")
 
-    if lista in listas:
-        listas.remove(lista)
-        print(f"\n{lista} ha sido eliminado de la lista.\n")
-        print(f"Lista actual: {listas}")
-    else:
-        print(f"\n{lista} no se encuentra en la lista.\n")
+    try:
+        if lista in listas:
+            while lista in listas:
+                listas.remove(lista)
+            print(f"\nTodos los elementos '{lista}' han sido eliminados de la lista.\n")
+            print(f"Lista actual: {listas}")
+        else:
+            print(f"\n{lista} no se encuentra en la lista.\n")
+    except ValueError:
+        print('Error.')
 
 
 def ordenar_lista():
