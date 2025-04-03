@@ -8,7 +8,6 @@ def agregar_elemento():
         i = 0
         if cantidad < 0:
             print("\nError: La cantidad debe ser un número entero positivo.")
-            return
         else:
             for i in range(cantidad):
                 lista = input("Ingrese el dato a agregar: ")
@@ -18,15 +17,16 @@ def agregar_elemento():
                 print(f"\nSe agregaron en la lista {cantidad} elementos.")
             else:
                 print("Ingrese los elementos.")
+
             print(f"\nHan sido agregado a la lista. {listas}\n")
 
     except ValueError:
         print("\nError: Debe ingresar un número entero.")
-        return
 
 
 def eliminar_elemento():
     lista = input("Ingrese el dato a eliminar: ")
+
     if lista in listas:
         listas.remove(lista)
         print(f"\n{lista} ha sido eliminado de la lista.\n")
