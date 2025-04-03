@@ -18,7 +18,6 @@ def agregar_elemento():
                 print(f"\nSe agregaron en la lista {cantidad} elementos.")
             else:
                 print("Ingrese los elementos.")
-                # listas.append(lista)
             print(f"\nHan sido agregado a la lista. {listas}\n")
 
     except ValueError:
