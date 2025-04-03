@@ -65,7 +65,7 @@ def obtener_raiz_cuadrada(a: float):
 
 def menu_operaciones_basicas():
     while True:
-        print("\nMENÚ OPERACIONES BÁSICAS")
+        print("\nMENÚ OPERACIONES BÁSICAS\n")
         print("1.- SUMA")
         print("2.- RESTA")
         print("3.- MULTIPLICACIÓN")
@@ -73,7 +73,7 @@ def menu_operaciones_basicas():
         print("5.- VOLVER AL MENÚ PRINCIPAL")
 
         try:
-            opcion = int(input("Introduce el número de la operación: "))
+            opcion = int(input("\nIntroduce el número de la operación: "))
             if opcion == 5:
                 break
             if opcion < 1 or opcion > 5:
@@ -105,7 +105,7 @@ def menu_operaciones_basicas():
 
 def menu_operaciones_exponenciales():
     while True:
-        print("\nMENÚ OPERACIONES EXPONENCIALES")
+        print("\nMENÚ OPERACIONES EXPONENCIALES\n")
         print("1.- ELEVAR AL CUADRADO")
         print("2.- ELEVAR A LA N POTENCIA")
         print("3.- VOLVER AL MENÚ PRINCIPAL")
@@ -133,7 +133,7 @@ def menu_operaciones_exponenciales():
 
 def menu_operaciones_factoriales():
     while True:
-        print("\nMENÚ OPERACIONES FACTORIALES")
+        print("\nMENÚ OPERACIONES FACTORIALES\n")
         print("1.- OBTENER FACTORIAL")
         print("2.- VOLVER AL MENÚ PRINCIPAL")
         try:
@@ -156,7 +156,7 @@ def menu_operaciones_factoriales():
 
 def menu_operaciones_raices():
     while True:
-        print("\nMENÚ OPERACIONES RAICES")
+        print("\nMENÚ OPERACIONES RAICES\n")
         print("1.- OBTENER RAIZ CUADRADA")
         print("2.- VOLVER AL MENÚ PRINCIPAL")
         try:
@@ -181,7 +181,7 @@ def menu_operaciones_raices():
 
 def menu_principal():
     while True:
-        print("\nMENÚ DE OPERACIONES")
+        print("\n--- MENÚ DE OPERACIONES ----\n")
         print("1.- OPERACIONES BÁSICAS")
         print("2.- OPERACIONES EXPONENCIALES")
         print("3.- OPERACIONES FACTORIALES")
