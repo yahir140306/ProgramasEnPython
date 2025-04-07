@@ -5,23 +5,23 @@ def agregar_elemento():
     cantidad = input("Cantidad de elementos a agregar: ")
     try:
         cantidad = int(cantidad)
-        i = 0
         if cantidad < 0:
             print("\nError: La cantidad debe ser un número entero positivo.")
         else:
             for i in range(cantidad):
                 lista = input("Ingrese el dato a agregar: ")
+                if lista in listas:
+                    print(
+                        "\nError: El dato ya existe en la lista. No se permiten duplicados."
+                    )
+                    print("Reiniciando proceso...\n")
+                    return agregar_elemento()
                 listas.append(lista)
 
-            if cantidad > 1:
-                print(f"\nSe agregaron en la lista {cantidad} elementos.")
-            else:
-                print("Ingrese los elementos.")
-
-            print(f"\nHan sido agregado a la lista. {listas}\n")
-
+            print(f"\nSe agregaron {cantidad} elemento(s) a la lista.")
+            print(f"Lista actual: {listas}\n")
     except ValueError:
-        print("\nError: Debe ingresar un número entero.")
+        print("\nError: Debes ingresar un número entero.\n")
 
 
 def eliminar_elemento():
@@ -36,7 +36,7 @@ def eliminar_elemento():
         else:
             print(f"\n{lista} no se encuentra en la lista.\n")
     except ValueError:
-        print('Error.')
+        print("Error.")
 
 
 def ordenar_lista():

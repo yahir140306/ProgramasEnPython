@@ -42,17 +42,15 @@ def modificar_contacto(
         with open(archivo, "r", encoding="utf-8") as f:
             lineas = f.readlines()
 
-        # Extraer la información original
         direccion = lineas[1].split(":", 1)[1].strip()
         telefono = lineas[2].split(":", 1)[1].strip()
         email = lineas[3].split(":", 1)[1].strip()
 
-        # Reemplazar con nueva info si se da
         direccion = nuevo_direccion if nuevo_direccion else direccion
         telefono = nuevo_telefono if nuevo_telefono else telefono
         email = nuevo_email if nuevo_email else email
 
-        nuevo_contenido = f"Nombre: {nombre}\nDireccion: {direccion}\nTelefono: {telefono}\nEmail: {email}"
+        nuevo_contenido = f"Nombre: {nombre} \nDireccion: {direccion} \nTelefono: {telefono} \nEmail: {email}"
         with open(archivo, "w", encoding="utf-8") as f:
             f.write(nuevo_contenido)
         print(f"Contacto '{nombre}' modificado.")
