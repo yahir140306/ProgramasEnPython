@@ -98,15 +98,23 @@ def menu():
 
         if opcion == "1":
             nombre = input("\nNombre: ")
+            archivo = f"{nombre}.txt"
+            if os.path.exists(archivo):
+                print(f"⚠️ El contacto '{nombre}' ya existe. No se puede duplicar.")
+                continue  # Regresa al menú directamente sin pedir más datos
+
             direccion = input("Direccion: ")
             telefono = input("Telefono: ")
             email = input("Email: ")
             crear_contacto(nombre, direccion, telefono, email)
+
         elif opcion == "2":
             ver_contactos()
+
         elif opcion == "3":
             nombre = input("Nombre del contacto a eliminar: ")
             eliminar_contacto(nombre)
+
         elif opcion == "4":
             nombre = input("Nombre del contacto a modificar: ")
             nuevo_direccion = input(
@@ -122,8 +130,10 @@ def menu():
                 nuevo_telefono if nuevo_telefono else None,
                 nuevo_email if nuevo_email else None,
             )
+
         elif opcion == "5":
             break
+
         else:
             print("Opción no válida. Inténtalo de nuevo.")
 
