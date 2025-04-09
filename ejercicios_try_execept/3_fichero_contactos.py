@@ -1,30 +1,48 @@
 import os
+from tabulate import tabulate
 
 
 def crear_contacto(nombre, direccion, telefono, email):
-    """Crea un contacto y lo guarda en un archivo TXT."""
+    archivo = f"{nombre}.txt"
+
+    if os.path.exists(archivo):
+        print(f"\nEl contacto '{nombre}' ya existe. No se puede duplicar.")
+        return
+
     contacto = f"Nombre: {nombre}\nDireccion: {direccion}\nTelefono: {telefono}\nEmail: {email}"
+
     try:
-        with open(f"{nombre}.txt", "w", encoding="utf-8") as f:
+        with open(archivo, "w", encoding="utf-8") as f:
             f.write(contacto)
-        print(f"Contacto '{nombre}' creado.")
+        print(f"\n✅ Contacto '{nombre}' creado.")
+        print(
+            "\n"
+            + tabulate(
+                [
+                    ["Nombre", "Direccion", "Telefono", "Email"],
+                    [nombre, direccion, telefono, email],
+                ],
+                tablefmt="grid",
+            )
+        )
     except Exception as e:
-        print(f"Error al crear el contacto: {e}")
+        print(f"⚠️ Error al crear el contacto: {e}")
 
 
 def ver_contactos():
-    """Muestra el contacto solicitado por el usuario."""
     nombre = input("¿Qué contacto quieres ver? (Nombre): ")
     archivo = f"{nombre}.txt"
+
     if os.path.exists(archivo):
         with open(archivo, "r", encoding="utf-8") as f:
-            print("\n" + f.read())
+            lineas = f.readlines()
+            datos = [linea.strip().split(": ", 1) for linea in lineas if ": " in linea]
+            print("\n" + tabulate(datos, tablefmt="grid"))
     else:
         print(f"El contacto '{nombre}' no existe.")
 
 
 def eliminar_contacto(nombre):
-    """Elimina un archivo de contacto."""
     archivo = f"{nombre}.txt"
     if os.path.exists(archivo):
         os.remove(archivo)
@@ -36,7 +54,6 @@ def eliminar_contacto(nombre):
 def modificar_contacto(
     nombre, nuevo_direccion=None, nuevo_telefono=None, nuevo_email=None
 ):
-    """Modifica los datos de un contacto en su archivo .txt."""
     archivo = f"{nombre}.txt"
     if os.path.exists(archivo):
         with open(archivo, "r", encoding="utf-8") as f:
@@ -53,25 +70,34 @@ def modificar_contacto(
         nuevo_contenido = f"Nombre: {nombre} \nDireccion: {direccion} \nTelefono: {telefono} \nEmail: {email}"
         with open(archivo, "w", encoding="utf-8") as f:
             f.write(nuevo_contenido)
-        print(f"Contacto '{nombre}' modificado.")
+        print(f"\nContacto '{nombre}' modificado.")
+        print(
+            tabulate(
+                [
+                    ["Nombre", "Direccion", "Telefono", "Email"],
+                    [nombre, direccion, telefono, email],
+                ],
+                headers="firstrow",
+                tablefmt="grid",
+            )
+        )
     else:
         print(f"El contacto '{nombre}' no existe.")
 
 
 def menu():
-    """Muestra el menú y gestiona las opciones."""
     while True:
-        print("\nMenu:")
+        print("\n   Menu:")
         print("1. Crear contacto")
         print("2. Ver contacto")
         print("3. Eliminar contacto")
         print("4. Modificar contacto")
         print("5. Salir")
 
-        opcion = input("Selecciona una opción: ")
+        opcion = input("\nSelecciona una opción: ")
 
         if opcion == "1":
-            nombre = input("Nombre: ")
+            nombre = input("\nNombre: ")
             direccion = input("Direccion: ")
             telefono = input("Telefono: ")
             email = input("Email: ")
