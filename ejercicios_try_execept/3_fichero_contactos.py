@@ -14,7 +14,7 @@ def crear_contacto(nombre, direccion, telefono, email):
     try:
         with open(archivo, "w", encoding="utf-8") as f:
             f.write(contacto)
-        print(f"\n✅ Contacto '{nombre}' creado.")
+        print(f"\nContacto '{nombre}' creado.")
         print(
             "\n"
             + tabulate(
