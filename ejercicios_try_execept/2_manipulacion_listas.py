@@ -11,11 +11,9 @@ def agregar_elemento():
             for i in range(cantidad):
                 lista = input("Ingrese el dato a agregar: ")
                 if lista in listas:
-                    print(
-                        "\nError: El dato ya existe en la lista. No se permiten duplicados."
-                    )
-                    print("Reiniciando proceso...\n")
-                    return agregar_elemento()
+                    print("\nError: El dato ya existe en la lista. No se permiten duplicados.\n")
+                    print(f"Lista quedo asi: {listas}\n")
+                    return menu()
                 listas.append(lista)
 
             print(f"\nSe agregaron {cantidad} elemento(s) a la lista.")
