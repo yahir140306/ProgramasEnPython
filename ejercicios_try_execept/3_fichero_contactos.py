@@ -30,16 +30,18 @@ def crear_contacto(nombre, direccion, telefono, email):
 
 
 def ver_contactos():
-    nombre = input("¿Qué contacto quieres ver? (Nombre): ")
-    archivo = f"{nombre}.txt"
-
-    if os.path.exists(archivo):
+    print()
+    archivos = [f for f in os.listdir() if f.endswith(".txt")]
+    if not archivos:
+        print("No hay contactos disponibles.")
+        return
+    print("Contactos disponibles:")
+    for archivo in archivos:
+        nombre = archivo[:-4]
         with open(archivo, "r", encoding="utf-8") as f:
             lineas = f.readlines()
             datos = [linea.strip().split(": ", 1) for linea in lineas if ": " in linea]
             print("\n" + tabulate(datos, tablefmt="grid"))
-    else:
-        print(f"El contacto '{nombre}' no existe.")
 
 
 def eliminar_contacto(nombre):
