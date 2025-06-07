@@ -36,19 +36,19 @@ def restar():
     valor1 = float(txtCaja1.get())
     valor2 = float(txtCaja2.get())
     resultado = valor1 - valor2
-    txt_resultado.configure(text=str(resultado), font=("arial", "20", "bold"))
+    etiqueta_mensaje.configure(text=str(resultado), font=("arial", "20", "bold"))
     
 def multiplicar():
     valor1 = float(txtCaja1.get())
     valor2 = float(txtCaja2.get())
     resultado = valor1 * valor2
-    txt_resultado.configure(text=str(resultado), font=("arial", "20", "bold"))
+    etiqueta_mensaje.configure(text=str(resultado), font=("arial", "20", "bold"))
     
 def dividir():
     valor1 = float(txtCaja1.get())
     valor2 = float(txtCaja2.get())
     resultado = valor1 / valor2
-    txt_resultado.configure(text=str(resultado), font=("arial", "20", "bold"))
+    etiqueta_mensaje.configure(text=str(resultado), font=("arial", "20", "bold"))
     
 
 boton_sumar.configure(command=sumar)
