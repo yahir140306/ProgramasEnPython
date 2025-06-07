@@ -26,33 +26,35 @@ boton_restar.place(x=200,y=300)
 boton_multiplicar.place(x=300,y=400)
 boton_dividir.place(x=400,y=500)
 
-resultado = 0
 def sumar():
-    valor1:int = txtCaja1.get()
-    valor2:int = txtCaja2.get()
+    valor1 = float(txtCaja1.get())
+    valor2 = float(txtCaja2.get())
     resultado = valor1 + valor2
-    txt_resultado.configure(text=resultado, font=("arial", "20", "bold"))
+    etiqueta_mensaje.configure(text=str(resultado), font=("arial", "20", "bold"))
     
 def restar():
-    valor1:int = txtCaja1.get()
-    valor2:int = txtCaja2.get()
-    resultado = valor1 + valor2
-    txt_resultado.configure(text=resultado, font=("arial", "20", "bold"))
+    valor1 = float(txtCaja1.get())
+    valor2 = float(txtCaja2.get())
+    resultado = valor1 - valor2
+    txt_resultado.configure(text=str(resultado), font=("arial", "20", "bold"))
     
 def multiplicar():
-    valor1:int = txtCaja1.get()
-    valor2:int = txtCaja2.get()
-    resultado = valor1 + valor2
-    txt_resultado.configure(text=resultado, font=("arial", "20", "bold"))
+    valor1 = float(txtCaja1.get())
+    valor2 = float(txtCaja2.get())
+    resultado = valor1 * valor2
+    txt_resultado.configure(text=str(resultado), font=("arial", "20", "bold"))
     
 def dividir():
-    valor1:int = txtCaja1.get()
-    valor2:int = txtCaja2.get()
-    resultado = valor1 + valor2
-    txt_resultado.configure(text=resultado, font=("arial", "20", "bold"))
+    valor1 = float(txtCaja1.get())
+    valor2 = float(txtCaja2.get())
+    resultado = valor1 / valor2
+    txt_resultado.configure(text=str(resultado), font=("arial", "20", "bold"))
     
 
 boton_sumar.configure(command=sumar)
+boton_restar.configure(command=restar)
+boton_multiplicar.configure(command=multiplicar)
+boton_dividir.configure(command=dividir)
 
 # mostrar los elementos
 etiqueta1.pack()
