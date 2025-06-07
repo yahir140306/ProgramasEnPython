@@ -7,13 +7,15 @@ ventana.geometry("500x500")
 etiqueta1 = tk.Label(ventana, text="Numero 1: ")
 etiqueta2 = tk.Label(ventana, text="Numero 2: ")
 etiqueta_mensaje = tk.Label(ventana, text="El resultado es: ")
+etiqueta_resultado = tk.Label(ventana, text="")
 
 txtCaja1 = tk.Entry()
 txtCaja1.configure(font=("arial", "20", "bold"))
 txtCaja2 = tk.Entry()
 txtCaja2.configure(font=("arial", "20", "bold"))
-txt_resultado = tk.Entry()
-txt_resultado.configure(font=("arial", "20", "bold"))
+# txt_resultado = tk.Entry()
+# txt_resultado.configure(font=("arial", "20", "bold"))
+etiqueta_mensaje.configure(font=("arial", "20", "bold"))
 
 boton_sumar = tk.Button(ventana, text="+")
 boton_restar = tk.Button(ventana, text="-")
@@ -30,25 +32,29 @@ def sumar():
     valor1 = float(txtCaja1.get())
     valor2 = float(txtCaja2.get())
     resultado = valor1 + valor2
-    etiqueta_mensaje.configure(text=str(resultado), font=("arial", "20", "bold"))
+    etiqueta_resultado.configure(text=str(resultado), font=("arial", "20", "bold"))
     
 def restar():
     valor1 = float(txtCaja1.get())
     valor2 = float(txtCaja2.get())
     resultado = valor1 - valor2
-    etiqueta_mensaje.configure(text=str(resultado), font=("arial", "20", "bold"))
+    etiqueta_resultado.configure(text=str(resultado), font=("arial", "20", "bold"))
     
 def multiplicar():
     valor1 = float(txtCaja1.get())
     valor2 = float(txtCaja2.get())
     resultado = valor1 * valor2
-    etiqueta_mensaje.configure(text=str(resultado), font=("arial", "20", "bold"))
+    etiqueta_resultado.configure(text=str(resultado), font=("arial", "20", "bold"))
     
 def dividir():
     valor1 = float(txtCaja1.get())
     valor2 = float(txtCaja2.get())
-    resultado = valor1 / valor2
-    etiqueta_mensaje.configure(text=str(resultado), font=("arial", "20", "bold"))
+    if valor2 == 0:
+        etiqueta_resultado.configure(text="Error: División por cero", font=("arial", "20", "bold"))
+        return
+    else:
+        resultado = valor1 / valor2
+    etiqueta_resultado.configure(text=str(resultado), font=("arial", "20", "bold"))
     
 
 boton_sumar.configure(command=sumar)
@@ -70,6 +76,7 @@ boton_multiplicar.pack()
 boton_dividir.pack()
 
 etiqueta_mensaje.pack()
-txt_resultado.pack()
+etiqueta_resultado.pack()
+# txt_resultado.pack()
 
 ventana.mainloop()
