@@ -1,0 +1,32 @@
+[
+    {
+        "nombre": "fulano",
+        "apellido": "fulano",
+        "telefono": "5161665111",
+        "sexo": "Mujer"
+    },
+    {
+        "nombre": "fulano",
+        "apellido": "fulano",
+        "telefono": "5131665111",
+        "sexo": "Mujer"
+    },
+    {
+        "nombre": "fulano",
+        "apellido": "fulano",
+        "telefono": "123456789",
+        "sexo": "Mujer"
+    },
+    {
+        "nombre": "fulano",
+        "apellido": "fulano",
+        "telefono": "123456789",
+        "sexo": "Mujer"
+    },
+    {
+        "nombre": "mario",
+        "apellido": "romero",
+        "telefono": "7712630591",
+        "sexo": "Hombre"
+    }
+]
