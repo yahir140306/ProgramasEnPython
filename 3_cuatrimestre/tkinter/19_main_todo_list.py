@@ -16,7 +16,7 @@ class AplicacionTareas:
         self.mostrar_tareas()
 
     def crear_elementos(self):
-        tk.Label(self.ventana, text="📝 Mi Lista de Tareas",
+        tk.Label(self.ventana, text="Mi Lista de Tareas",
                  font=("Arial", 16, "bold"), bg='#f0f0f0').pack(pady=10)
 
         marco_entrada = tk.Frame(self.ventana, bg='#f0f0f0')
@@ -34,15 +34,17 @@ class AplicacionTareas:
         marco_botones = tk.Frame(self.ventana, bg='#f0f0f0')
         marco_botones.pack(pady=10)
 
-        tk.Radiobutton(marco_botones, text="📋 Tareas por Hacer", variable=self.vista_actual,
+        tk.Radiobutton(marco_botones, text="Tareas por Hacer", variable=self.vista_actual,
                        value="pendientes", command=self.mostrar_tareas,
                        bg='#f0f0f0', font=("Arial", 10)).pack(side="left", padx=10)
 
-        tk.Radiobutton(marco_botones, text="✅ Tareas Completadas", variable=self.vista_actual,
+        tk.Radiobutton(marco_botones, text="Tareas Completadas", variable=self.vista_actual,
                        value="completadas", command=self.mostrar_tareas,
                        bg='#f0f0f0', font=("Arial", 10)).pack(side="left", padx=10)
 
-        self.marco_tareas = tk.Frame(self.ventana, bg='white', relief='sunken', bd=2)
+        # self.marco_tareas = tk.Frame(self.ventana, bg='white', relief='sunken', bd=2)
+        self.marco_tareas = tk.Frame(self.ventana, bg='#f0f0f0', bd=0, relief='flat')
+
         self.marco_tareas.pack(padx=20, pady=10, fill='both', expand=True)
 
     def agregar_tarea(self):
@@ -65,8 +67,8 @@ class AplicacionTareas:
     def mostrar_tareas_pendientes(self):
         tareas = self.logica.tareas_por_hacer
         if not tareas:
-            tk.Label(self.marco_tareas, text="🎉 ¡No hay tareas pendientes!",
-                     font=("Arial", 12), bg='white', fg='gray').pack(pady=20)
+            tk.Label(self.marco_tareas, text="¡No hay tareas pendientes!",font=("Arial", 12)).pack(pady=20)
+            # tk.Label(self.marco_tareas, text="¡No hay tareas pendientes!",font=("Arial", 12)).pack(pady=20)
             return
 
         for tarea in tareas:
@@ -75,24 +77,23 @@ class AplicacionTareas:
 
             tk.Checkbutton(fila, bg='white', command=lambda t=tarea: self.completar_tarea(t)).pack(side='left')
             tk.Label(fila, text=tarea, font=("Arial", 10), bg='white', anchor='w').pack(side='left', padx=5, fill='x', expand=True)
-            tk.Button(fila, text="🗑️", command=lambda t=tarea: self.borrar_tarea_pendiente(t),
+            tk.Button(fila, text="X", command=lambda t=tarea: self.borrar_tarea_pendiente(t),
                       bg='#ffcccc', font=("Arial", 8)).pack(side='right')
 
     def mostrar_tareas_completadas(self):
         tareas = self.logica.tareas_completadas
         if not tareas:
-            tk.Label(self.marco_tareas, text="📝 Aún no has completado ninguna tarea",
-                     font=("Arial", 12), bg='white', fg='gray').pack(pady=20)
+            tk.Label(self.marco_tareas, text="Aún no has completado ninguna tarea",font=("Arial", 12)).pack(pady=20)
             return
 
         for tarea in tareas:
             fila = tk.Frame(self.marco_tareas, bg='white')
             fila.pack(fill='x', padx=10, pady=5)
 
-            tk.Label(fila, text="✅", font=("Arial", 12), bg='white').pack(side='left')
-            tk.Label(fila, text=tarea, font=("Arial", 10, "overstrike"),
+            tk.Label(fila, font=("Arial", 12), bg='white').pack(side='left')
+            tk.Label(fila, text=tarea, font=("Arial", 10),
                      bg='white', anchor='w', fg='gray').pack(side='left', padx=5, fill='x', expand=True)
-            tk.Button(fila, text="🗑️", command=lambda t=tarea: self.borrar_tarea_completada(t),
+            tk.Button(fila, text="x", command=lambda t=tarea: self.borrar_tarea_completada(t),
                       bg='#ffcccc', font=("Arial", 8)).pack(side='right')
 
     def completar_tarea(self, tarea):
