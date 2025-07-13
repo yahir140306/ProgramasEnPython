@@ -86,3 +86,121 @@ def obtener_alumnos():
         if conn.is_connected():
             cursor.close()
             conn.close()
+
+
+def obtener_alumno_por_matricula(matricula):
+    """Obtiene un alumno específico por su matrícula"""
+    try:
+        conn = mysql.connector.connect(
+            host="localhost",
+            user="root",
+            password="",
+            database="registro_alumnos_poo",
+        )
+
+        if conn.is_connected():
+            cursor = conn.cursor()
+            query = """
+                SELECT matricula, nombre, apellido, fecha_nacimiento, sexo, direccion, carrera
+                FROM alumnos
+                WHERE matricula = %s
+            """
+            cursor.execute(query, (matricula,))
+            alumno = cursor.fetchone()
+            return alumno
+
+    except Error as e:
+        print(f"Error al obtener alumno: {e}")
+        raise e
+
+    finally:
+        if conn.is_connected():
+            cursor.close()
+            conn.close()
+
+
+def actualizar_alumno(matricula_original, matricula, nombre, apellido, fecha_nac, sexo, direccion, carrera):
+    """Actualiza los datos de un alumno"""
+    try:
+        conn = mysql.connector.connect(
+            host="localhost",
+            user="root",
+            password="",
+            database="registro_alumnos_poo",
+        )
+
+        if conn.is_connected():
+            cursor = conn.cursor()
+            query = """
+                UPDATE alumnos 
+                SET matricula = %s, nombre = %s, apellido = %s, fecha_nacimiento = %s, 
+                    sexo = %s, direccion = %s, carrera = %s
+                WHERE matricula = %s
+            """
+            valores = (matricula, nombre, apellido, fecha_nac, sexo, direccion, carrera, matricula_original)
+            cursor.execute(query, valores)
+            conn.commit()
+            print("Alumno actualizado correctamente.")
+
+    except Error as e:
+        print(f"Error al actualizar en la base de datos: {e}")
+        raise e
+
+    finally:
+        if conn.is_connected():
+            cursor.close()
+            conn.close()
+
+
+def eliminar_alumno(matricula):
+    """Elimina un alumno por su matrícula"""
+    try:
+        conn = mysql.connector.connect(
+            host="localhost",
+            user="root",
+            password="",
+            database="registro_alumnos_poo",
+        )
+
+        if conn.is_connected():
+            cursor = conn.cursor()
+            query = "DELETE FROM alumnos WHERE matricula = %s"
+            cursor.execute(query, (matricula,))
+            conn.commit()
+            print("Alumno eliminado correctamente.")
+
+    except Error as e:
+        print(f"Error al eliminar de la base de datos: {e}")
+        raise e
+
+    finally:
+        if conn.is_connected():
+            cursor.close()
+            conn.close()
+
+
+def verificar_matricula_existe_excepto(matricula, matricula_original):
+    """Verifica si una matrícula existe, excluyendo la matrícula original (para edición)"""
+    try:
+        conn = mysql.connector.connect(
+            host="localhost",
+            user="root",
+            password="",
+            database="registro_alumnos_poo",
+        )
+
+        if conn.is_connected():
+            cursor = conn.cursor()
+            query = "SELECT COUNT(*) FROM alumnos WHERE matricula = %s AND matricula != %s"
+            cursor.execute(query, (matricula, matricula_original))
+            resultado = cursor.fetchone()
+            return resultado[0] > 0
+
+    except Error as e:
+        print(f"Error al verificar matrícula: {e}")
+        raise e
+
+    finally:
+        if conn.is_connected():
+            cursor.close()
+            conn.close()
