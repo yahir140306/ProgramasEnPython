@@ -182,14 +182,12 @@ def agregar_alumno():
 
     try:
         if editando:
-            # Verificar si la matrícula ya existe (excluyendo la original)
             if matricula != matricula_original and verificar_matricula_existe_excepto(
                 matricula, matricula_original
             ):
                 messagebox.showerror("Error", f"La matrícula {matricula} ya existe.")
                 return
 
-            # Actualizar alumno
             actualizar_alumno(
                 matricula_original,
                 matricula,
@@ -202,19 +200,16 @@ def agregar_alumno():
             )
             messagebox.showinfo("Éxito", "Alumno actualizado correctamente.")
 
-            # Resetear modo edición
             editando = False
             matricula_original = None
             btn_agregar.config(text="Agregar Alumno")
             btn_cancelar.pack_forget()
 
         else:
-            # Verificar si la matrícula ya existe
             if verificar_matricula_existe(matricula):
                 messagebox.showerror("Error", f"La matrícula {matricula} ya existe.")
                 return
 
-            # Insertar nuevo alumno
             insertar_alumno(
                 matricula, nombre, apellido, fecha_nac, sexo, direccion, carrera
             )
@@ -228,7 +223,6 @@ def agregar_alumno():
 
 
 def editar_alumno():
-    """Función para editar un alumno seleccionado"""
     global editando, matricula_original
 
     seleccion = tabla.selection()
@@ -241,10 +235,8 @@ def editar_alumno():
     matricula = valores[0]
 
     try:
-        # Obtener datos completos del alumno
         alumno = obtener_alumno_por_matricula(matricula)
         if alumno:
-            # Llenar campos con los datos del alumno
             limpiar_campos()
             entry_matricula.insert(0, alumno[0])
             entry_nombre.insert(0, alumno[1])
@@ -253,12 +245,10 @@ def editar_alumno():
             sexo_var.set(alumno[4])
             cbb_direccion.set(alumno[5])
 
-            # Actualizar carreras y seleccionar la carrera del alumno
             if alumno[5] in carreras_por_direccion:
                 cbb_carrera["values"] = carreras_por_direccion[alumno[5]]
                 cbb_carrera.set(alumno[6])
 
-            # Configurar modo edición
             editando = True
             matricula_original = alumno[0]
             btn_agregar.config(text="Actualizar Alumno")
@@ -269,7 +259,6 @@ def editar_alumno():
 
 
 def eliminar_alumno_seleccionado():
-    """Función para eliminar un alumno seleccionado"""
     seleccion = tabla.selection()
     if not seleccion:
         messagebox.showwarning("Advertencia", "Seleccione un alumno para eliminar.")
@@ -281,7 +270,6 @@ def eliminar_alumno_seleccionado():
     nombre = valores[1]
     apellido = valores[2]
 
-    # Confirmar eliminación
     respuesta = messagebox.askyesno(
         "Confirmar eliminación",
         f"¿Está seguro de que desea eliminar al alumno {nombre} {apellido} con matrícula {matricula}?",
@@ -297,7 +285,6 @@ def eliminar_alumno_seleccionado():
 
 
 def cancelar_edicion():
-    """Cancela la edición y vuelve al modo agregar"""
     global editando, matricula_original
 
     editando = False
@@ -307,7 +294,6 @@ def cancelar_edicion():
     limpiar_campos()
 
 
-# Frame para botones
 frame_botones = tk.Frame(frame)
 frame_botones.grid(row=8, column=0, columnspan=5, pady=10)
 
@@ -315,7 +301,6 @@ btn_agregar = tk.Button(frame_botones, text="Agregar Alumno", command=agregar_al
 btn_agregar.pack(side="left", padx=5)
 
 btn_cancelar = tk.Button(frame_botones, text="Cancelar", command=cancelar_edicion)
-# El botón cancelar se oculta inicialmente
 
 btn_editar = tk.Button(frame_botones, text="Editar Alumno", command=editar_alumno)
 btn_editar.pack(side="left", padx=5)
@@ -325,11 +310,9 @@ btn_eliminar = tk.Button(
 )
 btn_eliminar.pack(side="left", padx=5)
 
-# Tabla
 frm_tabla = tk.Frame(root)
 frm_tabla.grid(row=9, column=0, padx=10, pady=10, sticky="nsew")
 
-# Configurar expansión de filas y columnas
 root.grid_rowconfigure(9, weight=1)
 root.grid_columnconfigure(0, weight=1)
 
@@ -362,14 +345,12 @@ tabla.column("Sexo", width=80)
 tabla.column("Direccion", width=200)
 tabla.column("Carrera", width=300)
 
-# Scrollbar para la tabla
 scrollbar = ttk.Scrollbar(frm_tabla, orient="vertical", command=tabla.yview)
 tabla.configure(yscrollcommand=scrollbar.set)
 
 tabla.pack(side="left", fill="both", expand=True)
 scrollbar.pack(side="right", fill="y")
 
-# Cargar datos iniciales
 cargar_alumnos()
 
 root.mainloop()

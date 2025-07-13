@@ -89,7 +89,6 @@ def obtener_alumnos():
 
 
 def obtener_alumno_por_matricula(matricula):
-    """Obtiene un alumno específico por su matrícula"""
     try:
         conn = mysql.connector.connect(
             host="localhost",
@@ -120,7 +119,6 @@ def obtener_alumno_por_matricula(matricula):
 
 
 def actualizar_alumno(matricula_original, matricula, nombre, apellido, fecha_nac, sexo, direccion, carrera):
-    """Actualiza los datos de un alumno"""
     try:
         conn = mysql.connector.connect(
             host="localhost",
@@ -153,7 +151,6 @@ def actualizar_alumno(matricula_original, matricula, nombre, apellido, fecha_nac
 
 
 def eliminar_alumno(matricula):
-    """Elimina un alumno por su matrícula"""
     try:
         conn = mysql.connector.connect(
             host="localhost",
@@ -180,7 +177,6 @@ def eliminar_alumno(matricula):
 
 
 def verificar_matricula_existe_excepto(matricula, matricula_original):
-    """Verifica si una matrícula existe, excluyendo la matrícula original (para edición)"""
     try:
         conn = mysql.connector.connect(
             host="localhost",
