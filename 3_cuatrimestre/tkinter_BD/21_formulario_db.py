@@ -106,14 +106,14 @@ def actualizar_carreras(event):
 
 
 cbb_direccion = ttk.Combobox(
-    frame, state="readonly", values=list(carreras_por_direccion.keys())
+    frame, state="readonly", values=list(carreras_por_direccion.keys()), width="30"
 )
 cbb_direccion.grid(row=6, column=1, padx=20, pady=20, sticky="w")
 cbb_direccion.set("Seleccione...")
 cbb_direccion.bind("<<ComboboxSelected>>", actualizar_carreras)
 
 tk.Label(frame, text="Carrera:").grid(row=6, column=2, sticky="w", padx=20, pady=20)
-cbb_carrera = ttk.Combobox(frame, state="readonly")
+cbb_carrera = ttk.Combobox(frame, state="readonly", width="50")
 cbb_carrera.grid(row=6, column=3, padx=20, pady=20, sticky="w")
 cbb_carrera.set("Seleccione carrera...")
 
