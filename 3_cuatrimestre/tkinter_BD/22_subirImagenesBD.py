@@ -5,13 +5,13 @@ from tkinter import messagebox
 import mysql.connector
 from PIL import Image, ImageTk
 
-ruta_imagen = None  # Variable global para almacenar la ruta de la imagen
+ruta_imagen = None
 
 
 def seleccionar_imagen():
     global ruta_imagen
     ruta_imagen = filedialog.askopenfilename(
-        initialdir="/Users/Juan Vahir/Downloads/",
+        initialdir="C:/Users/Juan Vahir/Downloads/",
         title="Buscar Imagen",
         filetypes=(("Archivos de Imagen", "*.jpg *.jpeg *.png *.gif "),),
     )
@@ -19,12 +19,11 @@ def seleccionar_imagen():
     print("Imagen seleccionada:", ruta_imagen)
     if ruta_imagen:
         try:
-            # Usar una variable local para el objeto Image
             imagen_pil = Image.open(ruta_imagen)
             imagen_pil.thumbnail((200, 200))
             nuevo_imagen = ImageTk.PhotoImage(imagen_pil)
             label_imagen.config(image=nuevo_imagen)
-            label_imagen.image = nuevo_imagen  # Mantener referencia
+            label_imagen.image = nuevo_imagen
         except Exception as e:
             messagebox.showerror("Error", f"No se pudo cargar la imagen: {e}")
 
@@ -39,6 +38,8 @@ def guardar_imagen_bd():
     try:
         with open(ruta_imagen, "rb") as file:
             imagen_bytes = file.read()
+            print(f"Tamaño de imagen: {len(imagen_bytes)} bytes")
+
             cn = mysql.connector.connect(
                 host="localhost",
                 user="root",
@@ -46,22 +47,33 @@ def guardar_imagen_bd():
                 port=3306,
                 database="registro_alumnos_poo",
             )
+            print("Conexión exitosa a la base de datos")
+
             miCursor = cn.cursor()
-            sql = "INSERT INTO imagens (nombre, imagen) VALUES (%s, %s)"
-            # Extraer solo el nombre del archivo de la ruta completa
+            sql = "INSERT INTO images (nombre, imagen) VALUES (%s, %s)"
             nombre_archivo = (
                 ruta_imagen.split("/")[-1]
                 if "/" in ruta_imagen
                 else ruta_imagen.split("\\")[-1]
             )
+
+            print(f"Insertando archivo: {nombre_archivo}")
             valores = (nombre_archivo, imagen_bytes)
             miCursor.execute(sql, valores)
             cn.commit()
-            cn.close()  # Cerrar la conexión
+
+            print(f"Filas afectadas: {miCursor.rowcount}")
+            cn.close()
+
             messagebox.showinfo(
-                "Éxito", "Imagen guardada correctamente en la base de datos"
+                "Éxito",
+                f"Imagen '{nombre_archivo}' guardada correctamente en la base de datos",
             )
+    except mysql.connector.Error as db_error:
+        print(f"Error de MySQL: {db_error}")
+        messagebox.showerror("Error de Base de Datos", f"Error de MySQL: {db_error}")
     except Exception as e:
+        print(f"Error general: {e}")
         messagebox.showerror("Error", f"Error al guardar en la base de datos: {e}")
 
 
