@@ -1,11 +1,24 @@
+import io
 import tkinter as tk
 from tkinter import filedialog
 from tkinter import messagebox
+from tkinter import ttk
 
 import mysql.connector
 from PIL import Image, ImageTk
 
 ruta_imagen = None
+
+
+def conectar_bd():
+    cn = mysql.connector.connect(
+        host="localhost",
+        user="root",
+        password="",
+        port=3306,
+        database="registro_alumnos_poo",
+    )
+    return cn
 
 
 def seleccionar_imagen():
@@ -40,13 +53,7 @@ def guardar_imagen_bd():
             imagen_bytes = file.read()
             print(f"Tamaño de imagen: {len(imagen_bytes)} bytes")
 
-            cn = mysql.connector.connect(
-                host="localhost",
-                user="root",
-                password="",
-                port=3306,
-                database="registro_alumnos_poo",
-            )
+            cn = conectar_bd()
             print("Conexión exitosa a la base de datos")
 
             miCursor = cn.cursor()
@@ -61,6 +68,7 @@ def guardar_imagen_bd():
             valores = (nombre_archivo, imagen_bytes)
             miCursor.execute(sql, valores)
             cn.commit()
+            cargar_imagenes_bd()
 
             print(f"Filas afectadas: {miCursor.rowcount}")
             cn.close()
@@ -77,9 +85,46 @@ def guardar_imagen_bd():
         messagebox.showerror("Error", f"Error al guardar en la base de datos: {e}")
 
 
+def cargar_imagenes_bd():
+    eliminar_datos()
+    cn = conectar_bd()
+    miCursor = cn.cursor()
+    sql = "SELECT  nombre from images"
+    miCursor.execute(sql)
+    for nombre in miCursor:
+        lstImage.insert("", tk.END, text=nombre)
+        print(nombre)
+
+
+def eliminar_datos():
+    for item in lstImage.get_children():
+        lstImage.delete(item)
+
+
+def item_seleccionado(event):
+    item = lstImage.selection()
+    nombre = lstImage.item(item, "text")
+    print(nombre)
+    buscar_ver_imagen(nombre)
+
+
+def buscar_ver_imagen(nombre):
+    cn = conectar_bd()
+    miCursor = cn.cursor()
+    sql = "SELECT imagen FROM images WHERE nombre = %s"
+    valores = (nombre,)
+    miCursor.execute(sql, valores)
+    img = miCursor.fetchone()[0]
+    miimagen = Image.open(io.BytesIO(img))
+    miimagen = miimagen.resize((300, 200))
+    foto = ImageTk.PhotoImage(miimagen)
+    lblImagenPrevia.config(image=foto)
+    lblImagenPrevia.image = foto
+
+
 ventana = tk.Tk()
 ventana.title("Guardar Imagen en MySQL")
-ventana.geometry("400x400")
+ventana.geometry("600x800")
 
 boton_seleccionar = tk.Button(
     ventana, text="Seleccionar Imagen", command=seleccionar_imagen
@@ -93,5 +138,20 @@ boton_guardar = tk.Button(
     ventana, text="Guardar Imagen en BD", command=guardar_imagen_bd
 )
 boton_guardar.pack(pady=20)
+
+frmImage = tk.LabelFrame(ventana, text="Lista de imagenes")
+frmImage.pack(fill="x")
+
+lstImage = ttk.Treeview(frmImage)
+lstImage.column("#0")
+lstImage.heading("#0", text="Nombre")
+lstImage.pack(fill="both")
+
+lblImagenPrevia = tk.Label(frmImage, text="Imagen aqui ...")
+lblImagenPrevia.pack(fill="both")
+
+cargar_imagenes_bd()
+
+lstImage.bind("<Double-Button-1>", item_seleccionado)
 
 ventana.mainloop()
