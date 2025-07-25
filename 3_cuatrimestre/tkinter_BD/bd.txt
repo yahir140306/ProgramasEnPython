@@ -1,0 +1,12 @@
+CREATE DATABASE IF NOT EXISTS veterinaria_peluditos;
+USE veterinaria_peluditos;
+
+CREATE TABLE mascotas (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    nombre VARCHAR(100) NOT NULL,
+    dueno VARCHAR(100) NOT NULL,
+    edad INT NOT NULL,
+    raza VARCHAR(100) NOT NULL,
+    imagen LONGBLOB,
+    fecha_registro TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);

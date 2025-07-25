@@ -2,7 +2,7 @@ import tkinter as tk
 from tkinter import ttk, filedialog, messagebox
 import mysql.connector
 from PIL import Image, ImageTk
-import io
+# import io
 
 # Variables globales
 ruta_imagen = None
@@ -132,51 +132,51 @@ def cargar_mascotas():
         messagebox.showerror("Error", f"Error al cargar mascotas: {e}")
 
 
-def ver_imagen_seleccionada():
-    seleccion = tabla.selection()
-    if not seleccion:
-        messagebox.showwarning(
-            "Advertencia", "Selecciona una mascota para ver su imagen"
-        )
-        return
+# def ver_imagen_seleccionada():
+#     seleccion = tabla.selection()
+#     if not seleccion:
+#         messagebox.showwarning(
+#             "Advertencia", "Selecciona una mascota para ver su imagen"
+#         )
+#         return
 
-    item = tabla.item(seleccion[0])
-    id_mascota = item["values"][0]
+#     item = tabla.item(seleccion[0])
+#     id_mascota = item["values"][0]
 
-    try:
-        conn = conectar_bd()
-        if not conn:
-            return
+#     try:
+#         conn = conectar_bd()
+#         if not conn:
+#             return
 
-        cursor = conn.cursor()
-        cursor.execute(
-            "SELECT nombre, imagen FROM mascotas WHERE id = %s", (id_mascota,)
-        )
-        resultado = cursor.fetchone()
+#         cursor = conn.cursor()
+#         cursor.execute(
+#             "SELECT nombre, imagen FROM mascotas WHERE id = %s", (id_mascota,)
+#         )
+#         resultado = cursor.fetchone()
 
-        if resultado and resultado[1]:
-            nombre, imagen_bytes = resultado
+#         if resultado and resultado[1]:
+#             nombre, imagen_bytes = resultado
 
-            # Crear ventana para mostrar imagen
-            ventana_imagen = tk.Toplevel(root)
-            ventana_imagen.title(f"Imagen de {nombre}")
-            ventana_imagen.geometry("400x400")
+#             # Crear ventana para mostrar imagen
+#             ventana_imagen = tk.Toplevel(root)
+#             ventana_imagen.title(f"Imagen de {nombre}")
+#             ventana_imagen.geometry("400x400")
 
-            imagen_pil = Image.open(io.BytesIO(imagen_bytes))
-            imagen_pil.thumbnail((350, 350))
-            imagen_tk = ImageTk.PhotoImage(imagen_pil)
+#             imagen_pil = Image.open(io.BytesIO(imagen_bytes))
+#             imagen_pil.thumbnail((350, 350))
+#             imagen_tk = ImageTk.PhotoImage(imagen_pil)
 
-            label_img = tk.Label(ventana_imagen, image=imagen_tk)
-            label_img.image = imagen_tk
-            label_img.pack(pady=20)
+#             label_img = tk.Label(ventana_imagen, image=imagen_tk)
+#             label_img.image = imagen_tk
+#             label_img.pack(pady=20)
 
-        else:
-            messagebox.showinfo("Info", "Esta mascota no tiene imagen")
+#         else:
+#             messagebox.showinfo("Info", "Esta mascota no tiene imagen")
 
-        conn.close()
+#         conn.close()
 
-    except Exception as e:
-        messagebox.showerror("Error", f"Error al mostrar imagen: {e}")
+#     except Exception as e:
+#         messagebox.showerror("Error", f"Error al mostrar imagen: {e}")
 
 
 # Crear ventana principal
@@ -314,12 +314,12 @@ tabla.pack(side="left", fill="both", expand=True, padx=10, pady=10)
 scrollbar.pack(side="right", fill="y", pady=10)
 
 # Botón para ver imagen
-btn_ver_imagen = tk.Button(
-    frame_listado,
-    text="Ver Imagen Seleccionada",
-    command=ver_imagen_seleccionada,
-)
-btn_ver_imagen.pack(pady=(0, 10))
+# btn_ver_imagen = tk.Button(
+#     frame_listado,
+#     text="Ver Imagen Seleccionada",
+#     command=ver_imagen_seleccionada,
+# )
+# btn_ver_imagen.pack(pady=(0, 10))
 
 # Cargar mascotas al iniciar
 cargar_mascotas()
