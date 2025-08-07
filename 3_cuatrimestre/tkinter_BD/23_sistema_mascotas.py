@@ -4,7 +4,131 @@ import mysql.connector
 from PIL import Image, ImageTk
 import io
 
-# Variables globales
+from reportlab.lib.pagesizes import letter
+from reportlab.platypus import SimpleDocTemplate, Table, TableStyle, Paragraph, Spacer
+from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
+from reportlab.lib import colors
+from reportlab.lib.units import inch
+import os
+from datetime import datetime
+
+
+def generar_pdf():
+    try:
+        conn = conectar_bd()
+        if not conn:
+            return
+
+        cursor = conn.cursor()
+        cursor.execute("SELECT nombre, edad, raza, dueno FROM mascotas ORDER BY nombre")
+        mascotas = cursor.fetchall()
+        conn.close()
+
+        if not mascotas:
+            messagebox.showinfo(
+                "Info", "No hay mascotas registradas para generar el PDF"
+            )
+            return
+
+        fecha_actual = datetime.now().strftime("%Y%m%d_%H%M%S")
+        nombre_archivo = f"listado_mascotas_{fecha_actual}.pdf"
+        ruta_archivo = os.path.join(os.path.expanduser("~"), "Desktop", nombre_archivo)
+
+        doc = SimpleDocTemplate(ruta_archivo, pagesize=letter)
+        elements = []
+
+        # Estilos
+        styles = getSampleStyleSheet()
+        title_style = ParagraphStyle(
+            "CustomTitle",
+            parent=styles["Heading1"],
+            fontSize=18,
+            spaceAfter=30,
+            alignment=1,  # Centrado
+            textColor=colors.darkblue,
+        )
+
+        # Título
+        title = Paragraph("Veterinaria Peluditos al Rescate", title_style)
+        elements.append(title)
+
+        subtitle = Paragraph("Listado de Mascotas Registradas", styles["Heading2"])
+        elements.append(subtitle)
+        elements.append(Spacer(1, 20))
+
+        # Fecha de generación
+        fecha_texto = (
+            f"Fecha de generación: {datetime.now().strftime('%d/%m/%Y %H:%M')}"
+        )
+        fecha_par = Paragraph(fecha_texto, styles["Normal"])
+        elements.append(fecha_par)
+        elements.append(Spacer(1, 20))
+
+        # Crear tabla
+        data = [["Nombre", "Edad", "Raza", "Dueño"]]  # Encabezados
+
+        # Agregar datos
+        for mascota in mascotas:
+            nombre, edad, raza, dueno = mascota
+            data.append([nombre, str(edad), raza, dueno])
+
+        # Crear tabla con estilo
+        table = Table(data, colWidths=[2 * inch, 1 * inch, 2 * inch, 2 * inch])
+        table.setStyle(
+            TableStyle(
+                [
+                    # Estilo del encabezado
+                    ("BACKGROUND", (0, 0), (-1, 0), colors.darkblue),
+                    ("TEXTCOLOR", (0, 0), (-1, 0), colors.whitesmoke),
+                    ("ALIGN", (0, 0), (-1, -1), "CENTER"),
+                    ("FONTNAME", (0, 0), (-1, 0), "Helvetica-Bold"),
+                    ("FONTSIZE", (0, 0), (-1, 0), 12),
+                    # Estilo del contenido
+                    ("BACKGROUND", (0, 1), (-1, -1), colors.beige),
+                    ("TEXTCOLOR", (0, 1), (-1, -1), colors.black),
+                    ("FONTNAME", (0, 1), (-1, -1), "Helvetica"),
+                    ("FONTSIZE", (0, 1), (-1, -1), 10),
+                    # Bordes
+                    ("GRID", (0, 0), (-1, -1), 1, colors.black),
+                    ("VALIGN", (0, 0), (-1, -1), "MIDDLE"),
+                    # Alternando colores de filas
+                    (
+                        "ROWBACKGROUNDS",
+                        (0, 1),
+                        (-1, -1),
+                        [colors.white, colors.lightgrey],
+                    ),
+                ]
+            )
+        )
+
+        elements.append(table)
+        elements.append(Spacer(1, 30))
+
+        # Pie de página
+        total_mascotas = len(mascotas)
+        pie = Paragraph(
+            f"Total de mascotas registradas: {total_mascotas}", styles["Normal"]
+        )
+        elements.append(pie)
+
+        # Generar PDF
+        doc.build(elements)
+
+        # Mensaje de éxito
+        messagebox.showinfo("Éxito", f"PDF generado correctamente:\n{ruta_archivo}")
+
+        # Preguntar si quiere abrir el archivo
+        respuesta = messagebox.askyesno(
+            "Abrir PDF", "¿Desea abrir el archivo PDF generado?"
+        )
+        if respuesta:
+            os.startfile(ruta_archivo)  # Windows
+
+    except Exception as e:
+        messagebox.showerror("Error", f"Error al generar PDF: {e}")
+
+
 ruta_imagen = None
 
 
@@ -39,7 +163,6 @@ def seleccionar_imagen():
 
     if ruta_imagen:
         try:
-            # Mostrar imagen en el label
             imagen_pil = Image.open(ruta_imagen)
             imagen_pil.thumbnail((150, 150))
             imagen_tk = ImageTk.PhotoImage(imagen_pil)
@@ -114,11 +237,9 @@ def cargar_mascotas():
         )
         mascotas = cursor.fetchall()
 
-        # Limpiar tabla
         for item in tabla.get_children():
             tabla.delete(item)
 
-        # Llenar tabla
         for mascota in mascotas:
             id_mascota, nombre, edad, raza, dueno, imagen = mascota
             estado_imagen = "Sí" if imagen else "No"
@@ -157,7 +278,6 @@ def ver_imagen_seleccionada():
         if resultado and resultado[1]:
             nombre, imagen_bytes = resultado
 
-            # Crear ventana para mostrar imagen
             ventana_imagen = tk.Toplevel(root)
             ventana_imagen.title(f"Imagen de {nombre}")
             ventana_imagen.geometry("400x400")
@@ -179,13 +299,11 @@ def ver_imagen_seleccionada():
         messagebox.showerror("Error", f"Error al mostrar imagen: {e}")
 
 
-# Crear ventana principal
 root = tk.Tk()
 root.title("Veterinaria Peluditos al Rescate")
 root.geometry("1000x700")
 root.configure(bg="#f0f0f0")
 
-# Título principal
 titulo = tk.Label(
     root,
     text="Veterinaria Peluditos al Rescate",
@@ -193,11 +311,9 @@ titulo = tk.Label(
 )
 titulo.pack(pady=20)
 
-# Frame principal
 frame_principal = tk.Frame(root, bg="#f0f0f0")
 frame_principal.pack(padx=20, pady=10, fill="both", expand=True)
 
-# Frame para datos de mascota
 frame_datos = tk.LabelFrame(
     frame_principal,
     text="Datos de la Mascota",
@@ -205,15 +321,12 @@ frame_datos = tk.LabelFrame(
 )
 frame_datos.pack(fill="x", pady=(0, 10))
 
-# Frame interno para organizar campos e imagen
 frame_interno = tk.Frame(frame_datos, bg="#f0f0f0")
 frame_interno.pack(padx=10, pady=10, fill="both")
 
-# Frame izquierdo para campos
 frame_campos = tk.Frame(frame_interno, bg="#f0f0f0")
 frame_campos.pack(side="left", fill="both", expand=True)
 
-# Campos del formulario
 tk.Label(frame_campos, text="Nombre:", font=("Arial", 10), bg="#f0f0f0").grid(
     row=0, column=0, sticky="w", pady=5
 )
@@ -241,7 +354,6 @@ tk.Label(frame_campos, text="Raza:", font=("Arial", 10), bg="#f0f0f0").grid(
 entry_raza = tk.Entry(frame_campos, font=("Arial", 10), width=25)
 entry_raza.grid(row=3, column=1, padx=(10, 20), pady=5)
 
-# Frame derecho para imagen
 frame_imagen = tk.Frame(frame_interno, bg="#f0f0f0")
 frame_imagen.pack(side="right", padx=(20, 0))
 
@@ -264,7 +376,6 @@ btn_cargar_imagen = tk.Button(
 )
 btn_cargar_imagen.pack()
 
-# Botón guardar mascota
 btn_guardar = tk.Button(
     frame_principal,
     text="Guardar Mascota",
@@ -274,7 +385,6 @@ btn_guardar = tk.Button(
 )
 btn_guardar.pack(pady=10)
 
-# Frame para listado de mascotas
 frame_listado = tk.LabelFrame(
     frame_principal,
     text="Listado de Mascotas",
@@ -282,7 +392,6 @@ frame_listado = tk.LabelFrame(
 )
 frame_listado.pack(fill="both", expand=True, pady=(10, 0))
 
-# Tabla de mascotas
 tabla = ttk.Treeview(
     frame_listado,
     columns=("Nombre", "Edad", "Raza", "Dueño", "Imagen"),
@@ -306,6 +415,33 @@ tabla.column("Raza", width=120)
 tabla.column("Dueño", width=120)
 tabla.column("Imagen", width=80)
 
+
+frame_botones = tk.Frame(frame_listado, bg="#f0f0f0")
+frame_botones.pack(pady=(0, 10))
+
+# Botón para ver imagen
+btn_ver_imagen = tk.Button(
+    frame_botones,
+    text="Ver Imagen Seleccionada",
+    command=ver_imagen_seleccionada,
+    bg="#e74c3c",
+    fg="white",
+    font=("Arial", 10),
+    padx=10,
+)
+btn_ver_imagen.pack(side="left", padx=(0, 10))
+
+# Botón para generar PDF
+btn_generar_pdf = tk.Button(
+    frame_botones,
+    text="Generar PDF",
+    command=generar_pdf,
+    bg="#9b59b6",
+    fg="white",
+    font=("Arial", 10),
+    padx=20,
+)
+btn_generar_pdf.pack(side="left")
 # Scrollbar para la tabla
 scrollbar = ttk.Scrollbar(frame_listado, orient="vertical", command=tabla.yview)
 tabla.configure(yscrollcommand=scrollbar.set)
