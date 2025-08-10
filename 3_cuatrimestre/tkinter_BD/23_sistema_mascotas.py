@@ -5,7 +5,7 @@ from PIL import Image, ImageTk
 import io
 
 from reportlab.lib.pagesizes import letter
-from reportlab.platypus import SimpleDocTemplate, Table, TableStyle, Paragraph, Spacer
+from reportlab.platypus import SimpleDocTemplate, Paragraph, Spacer
 from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
 from reportlab.lib import colors
 from reportlab.lib.units import inch
@@ -14,25 +14,56 @@ from datetime import datetime
 
 
 def generar_pdf():
+    # Verificar que haya una mascota seleccionada
+    seleccion = tabla.selection()
+    if not seleccion:
+        messagebox.showwarning(
+            "Advertencia", "Selecciona una mascota para generar el PDF"
+        )
+        return
+
     try:
+        # Obtener ID de la mascota seleccionada
+        item = tabla.item(seleccion[0])
+        id_mascota = item["values"][0]
+        print(f"DEBUG: ID mascota seleccionada: {id_mascota}")
+
         conn = conectar_bd()
         if not conn:
+            print("DEBUG: No se pudo conectar a la base de datos")
             return
 
         cursor = conn.cursor()
-        cursor.execute("SELECT nombre, edad, raza, dueno FROM mascotas ORDER BY nombre")
-        mascotas = cursor.fetchall()
+        cursor.execute(
+            "SELECT nombre, edad, raza, dueno, imagen FROM mascotas WHERE id = %s",
+            (id_mascota,),
+        )
+        mascota = cursor.fetchone()
         conn.close()
 
-        if not mascotas:
-            messagebox.showinfo(
-                "Info", "No hay mascotas registradas para generar el PDF"
+        print(f"DEBUG: Datos de mascota obtenidos: {mascota is not None}")
+
+        if not mascota:
+            messagebox.showerror("Error", "No se encontró la mascota seleccionada")
+            return
+
+        nombre, edad, raza, dueno, imagen_bytes = mascota
+        print(f"DEBUG: Mascota - Nombre: {nombre}, Edad: {edad}, Raza: {raza}")
+
+        # Crear archivo PDF en la carpeta de Descargas
+        fecha_actual = datetime.now().strftime("%Y%m%d_%H%M%S")
+        nombre_archivo = f"mascota_{nombre}_{fecha_actual}.pdf"
+        ruta_descargas = os.path.join(os.path.expanduser("~"), "Downloads")
+
+        # Verificar que la carpeta Downloads existe
+        if not os.path.exists(ruta_descargas):
+            messagebox.showerror(
+                "Error", f"No se encontró la carpeta Downloads: {ruta_descargas}"
             )
             return
 
-        fecha_actual = datetime.now().strftime("%Y%m%d_%H%M%S")
-        nombre_archivo = f"listado_mascotas_{fecha_actual}.pdf"
-        ruta_archivo = os.path.join(os.path.expanduser("~"), "Desktop", nombre_archivo)
+        ruta_archivo = os.path.join(ruta_descargas, nombre_archivo)
+        print(f"DEBUG: Ruta del archivo PDF: {ruta_archivo}")
 
         doc = SimpleDocTemplate(ruta_archivo, pagesize=letter)
         elements = []
@@ -43,7 +74,7 @@ def generar_pdf():
             "CustomTitle",
             parent=styles["Heading1"],
             fontSize=18,
-            spaceAfter=30,
+            spaceAfter=20,
             alignment=1,  # Centrado
             textColor=colors.darkblue,
         )
@@ -52,68 +83,86 @@ def generar_pdf():
         title = Paragraph("Veterinaria Peluditos al Rescate", title_style)
         elements.append(title)
 
-        subtitle = Paragraph("Listado de Mascotas Registradas", styles["Heading2"])
+        # Subtítulo
+        subtitle = Paragraph("Información de Mascota", styles["Heading2"])
         elements.append(subtitle)
         elements.append(Spacer(1, 20))
 
-        # Fecha de generación
-        fecha_texto = (
-            f"Fecha de generación: {datetime.now().strftime('%d/%m/%Y %H:%M')}"
-        )
-        fecha_par = Paragraph(fecha_texto, styles["Normal"])
-        elements.append(fecha_par)
-        elements.append(Spacer(1, 20))
+        # Información de la mascota
+        info_text = f"""
+        <b>Nombre:</b> {nombre}<br/>
+        <b>Edad:</b> {edad} años<br/>
+        <b>Raza:</b> {raza}<br/>
+        <b>Dueño:</b> {dueno}<br/>
+        <b>Fecha de generación:</b> {datetime.now().strftime("%d/%m/%Y %H:%M")}
+        """
 
-        # Crear tabla
-        data = [["Nombre", "Edad", "Raza", "Dueño"]]  # Encabezados
-
-        # Agregar datos
-        for mascota in mascotas:
-            nombre, edad, raza, dueno = mascota
-            data.append([nombre, str(edad), raza, dueno])
-
-        # Crear tabla con estilo
-        table = Table(data, colWidths=[2 * inch, 1 * inch, 2 * inch, 2 * inch])
-        table.setStyle(
-            TableStyle(
-                [
-                    # Estilo del encabezado
-                    ("BACKGROUND", (0, 0), (-1, 0), colors.darkblue),
-                    ("TEXTCOLOR", (0, 0), (-1, 0), colors.whitesmoke),
-                    ("ALIGN", (0, 0), (-1, -1), "CENTER"),
-                    ("FONTNAME", (0, 0), (-1, 0), "Helvetica-Bold"),
-                    ("FONTSIZE", (0, 0), (-1, 0), 12),
-                    # Estilo del contenido
-                    ("BACKGROUND", (0, 1), (-1, -1), colors.beige),
-                    ("TEXTCOLOR", (0, 1), (-1, -1), colors.black),
-                    ("FONTNAME", (0, 1), (-1, -1), "Helvetica"),
-                    ("FONTSIZE", (0, 1), (-1, -1), 10),
-                    # Bordes
-                    ("GRID", (0, 0), (-1, -1), 1, colors.black),
-                    ("VALIGN", (0, 0), (-1, -1), "MIDDLE"),
-                    # Alternando colores de filas
-                    (
-                        "ROWBACKGROUNDS",
-                        (0, 1),
-                        (-1, -1),
-                        [colors.white, colors.lightgrey],
-                    ),
-                ]
-            )
-        )
-
-        elements.append(table)
+        info_paragraph = Paragraph(info_text, styles["Normal"])
+        elements.append(info_paragraph)
         elements.append(Spacer(1, 30))
 
-        # Pie de página
-        total_mascotas = len(mascotas)
-        pie = Paragraph(
-            f"Total de mascotas registradas: {total_mascotas}", styles["Normal"]
-        )
-        elements.append(pie)
+        # Agregar imagen si existe
+        temp_path = None  # Variable para rastrear archivo temporal
+        if imagen_bytes:
+            try:
+                # Crear imagen temporal
+                import tempfile
+
+                with tempfile.NamedTemporaryFile(
+                    delete=False, suffix=".jpg"
+                ) as temp_file:
+                    temp_file.write(imagen_bytes)
+                    temp_path = temp_file.name
+
+                # Agregar imagen al PDF
+                from reportlab.platypus import Image as ReportLabImage
+
+                # Verificar que el archivo temporal existe
+                if not os.path.exists(temp_path):
+                    raise FileNotFoundError(
+                        "No se pudo crear el archivo temporal de imagen"
+                    )
+
+                img = ReportLabImage(temp_path, width=3 * inch, height=3 * inch)
+                elements.append(Paragraph("Fotografía:", styles["Heading3"]))
+                elements.append(Spacer(1, 10))
+                elements.append(img)
+
+                # NO eliminar archivo temporal aquí - se hará después del build
+
+            except Exception as img_error:
+                error_text = Paragraph(
+                    f"Error al cargar imagen: {img_error}", styles["Normal"]
+                )
+                elements.append(error_text)
+                # Limpiar archivo temporal si hay error
+                if temp_path and os.path.exists(temp_path):
+                    os.unlink(temp_path)
+                    temp_path = None
+        else:
+            no_img_text = Paragraph(
+                "Esta mascota no tiene imagen registrada.", styles["Normal"]
+            )
+            elements.append(no_img_text)
 
         # Generar PDF
+        print("DEBUG: Generando PDF...")
         doc.build(elements)
+        print("DEBUG: PDF generado exitosamente")
+
+        # Eliminar archivo temporal después de generar el PDF
+        if temp_path and os.path.exists(temp_path):
+            os.unlink(temp_path)
+            print("DEBUG: Archivo temporal eliminado")
+
+        # Verificar que el archivo se creó
+        if os.path.exists(ruta_archivo):
+            print(
+                f"DEBUG: Archivo confirmado. Tamaño: {os.path.getsize(ruta_archivo)} bytes"
+            )
+        else:
+            messagebox.showerror("Error", "El archivo PDF no se creó correctamente")
+            return
 
         # Mensaje de éxito
         messagebox.showinfo("Éxito", f"PDF generado correctamente:\n{ruta_archivo}")
@@ -126,9 +175,20 @@ def generar_pdf():
             os.startfile(ruta_archivo)  # Windows
 
     except Exception as e:
+        print(f"DEBUG: Error completo: {str(e)}")
+        import traceback
+
+        traceback.print_exc()
+
+        # Limpiar archivo temporal si existe en caso de error general
+        if "temp_path" in locals() and temp_path and os.path.exists(temp_path):
+            os.unlink(temp_path)
+            print("DEBUG: Archivo temporal eliminado por error")
+
         messagebox.showerror("Error", f"Error al generar PDF: {e}")
 
 
+# Variables globales
 ruta_imagen = None
 
 
@@ -449,13 +509,13 @@ tabla.configure(yscrollcommand=scrollbar.set)
 tabla.pack(side="left", fill="both", expand=True, padx=10, pady=10)
 scrollbar.pack(side="right", fill="y", pady=10)
 
-# Botón para ver imagen
-btn_ver_imagen = tk.Button(
-    frame_listado,
-    text="Ver Imagen Seleccionada",
-    command=ver_imagen_seleccionada,
-)
-btn_ver_imagen.pack(pady=(0, 10))
+# # Botón para ver imagen
+# btn_ver_imagen = tk.Button(
+#     frame_listado,
+#     text="Ver Imagen Seleccionada",
+#     command=ver_imagen_seleccionada,
+# )
+# btn_ver_imagen.pack(pady=(0, 10))
 
 # Cargar mascotas al iniciar
 cargar_mascotas()
