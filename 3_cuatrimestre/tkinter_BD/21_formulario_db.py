@@ -363,11 +363,15 @@ def generar_historial_academico():
         # Obtener calificaciones reales de la base de datos
         try:
             from insertar_datos_formulario_db import obtener_calificaciones_alumno
+
             calificaciones_bd = obtener_calificaciones_alumno(matricula)
-            
+
             # Convertir a formato de tuplas (materia, calificacion)
             if calificaciones_bd:
-                materias = [(materia, float(calificacion)) for materia, calificacion, _ in calificaciones_bd]
+                materias = [
+                    (materia, float(calificacion))
+                    for materia, calificacion, _ in calificaciones_bd
+                ]
             else:
                 # Si no hay calificaciones, usar materias sin calificaciones
                 materias = [
@@ -391,7 +395,9 @@ def generar_historial_academico():
             ]
 
         # Calcular promedio solo si hay calificaciones
-        calificaciones_validas = [calificacion for _, calificacion in materias if calificacion is not None]
+        calificaciones_validas = [
+            calificacion for _, calificacion in materias if calificacion is not None
+        ]
         if calificaciones_validas:
             promedio = sum(calificaciones_validas) / len(calificaciones_validas)
         else:
@@ -550,7 +556,9 @@ def gestionar_calificaciones():
     # Verificar que hay un alumno seleccionado
     seleccion = tabla.selection()
     if not seleccion:
-        messagebox.showwarning("Advertencia", "Selecciona un alumno para gestionar sus calificaciones")
+        messagebox.showwarning(
+            "Advertencia", "Selecciona un alumno para gestionar sus calificaciones"
+        )
         return
 
     item = tabla.item(seleccion[0])
@@ -569,20 +577,25 @@ def gestionar_calificaciones():
     frame_calif.pack(fill="both", expand=True, padx=10, pady=10)
 
     # Título
-    tk.Label(frame_calif, text=f"Calificaciones de: {nombre_completo}", 
-             font=("Arial", 14, "bold"), bg="lightblue").pack(pady=(0, 10))
-    
-    tk.Label(frame_calif, text=f"Matrícula: {matricula}", 
-             font=("Arial", 10), bg="lightblue").pack(pady=(0, 20))
+    tk.Label(
+        frame_calif,
+        text=f"Calificaciones de: {nombre_completo}",
+        font=("Arial", 14, "bold"),
+        bg="lightblue",
+    ).pack(pady=(0, 10))
+
+    tk.Label(
+        frame_calif, text=f"Matrícula: {matricula}", font=("Arial", 10), bg="lightblue"
+    ).pack(pady=(0, 20))
 
     # Materias del 3er cuatrimestre
     materias = [
         "Bases de datos",
-        "Desarrollo y pensamientos y toma de decisiones", 
+        "Desarrollo y pensamientos y toma de decisiones",
         "Inglés 3",
         "Programación orientada a objetos",
         "Proyecto integrador I",
-        "Tópicos de calidad para el diseño de software"
+        "Tópicos de calidad para el diseño de software",
     ]
 
     # Diccionario para almacenar los Entry de calificaciones
@@ -599,31 +612,43 @@ def gestionar_calificaciones():
         frame_materia.pack(fill="x", pady=5)
 
         # Label de la materia
-        tk.Label(frame_materia, text=materia + ":", font=("Arial", 10), 
-                bg="lightblue", width=40, anchor="w").pack(side="left")
+        tk.Label(
+            frame_materia,
+            text=materia + ":",
+            font=("Arial", 10),
+            bg="lightblue",
+            width=40,
+            anchor="w",
+        ).pack(side="left")
 
         # Entry para la calificación
-        vcmd_calif = (ventana_calif.register(lambda x: x.replace('.', '').isdigit() or x == ""), "%P")
-        entry_calif = tk.Entry(frame_materia, width=10, validate="key", validatecommand=vcmd_calif)
+        vcmd_calif = (
+            ventana_calif.register(lambda x: x.replace(".", "").isdigit() or x == ""),
+            "%P",
+        )
+        entry_calif = tk.Entry(
+            frame_materia, width=10, validate="key", validatecommand=vcmd_calif
+        )
         entry_calif.pack(side="right", padx=(10, 0))
-        
+
         entries_calificaciones[materia] = entry_calif
 
     # Cargar calificaciones existentes
     def cargar_calificaciones_existentes():
         try:
             from insertar_datos_formulario_db import obtener_calificaciones_alumno
+
             calificaciones = obtener_calificaciones_alumno(matricula)
-            
+
             # Limpiar campos
             for entry in entries_calificaciones.values():
                 entry.delete(0, tk.END)
-            
+
             # Llenar con calificaciones existentes
             for materia, calificacion, _ in calificaciones:
                 if materia in entries_calificaciones:
                     entries_calificaciones[materia].insert(0, str(calificacion))
-                    
+
         except Exception as e:
             messagebox.showerror("Error", f"Error al cargar calificaciones: {str(e)}")
 
@@ -631,17 +656,17 @@ def gestionar_calificaciones():
     def guardar_calificaciones():
         try:
             from insertar_datos_formulario_db import insertar_calificacion
-            
+
             calificaciones_guardadas = 0
             errores = []
-            
+
             for materia, entry in entries_calificaciones.items():
                 calificacion_str = entry.get().strip()
-                
+
                 if calificacion_str:  # Si hay valor
                     try:
                         calificacion = float(calificacion_str)
-                        
+
                         # Validar rango de calificación (0-100)
                         if 0 <= calificacion <= 100:
                             if insertar_calificacion(matricula, materia, calificacion):
@@ -649,23 +674,36 @@ def gestionar_calificaciones():
                             else:
                                 errores.append(f"Error al guardar {materia}")
                         else:
-                            errores.append(f"{materia}: La calificación debe estar entre 0 y 100")
-                            
+                            errores.append(
+                                f"{materia}: La calificación debe estar entre 0 y 100"
+                            )
+
                     except ValueError:
                         errores.append(f"{materia}: Calificación inválida")
-            
+
             # Mostrar resultado
             if calificaciones_guardadas > 0:
                 if errores:
-                    messagebox.showwarning("Parcialmente guardado", 
-                                         f"Se guardaron {calificaciones_guardadas} calificaciones.\n\nErrores:\n" + "\n".join(errores))
+                    messagebox.showwarning(
+                        "Parcialmente guardado",
+                        f"Se guardaron {calificaciones_guardadas} calificaciones.\n\nErrores:\n"
+                        + "\n".join(errores),
+                    )
                 else:
-                    messagebox.showinfo("Éxito", f"Se guardaron {calificaciones_guardadas} calificaciones correctamente.")
+                    messagebox.showinfo(
+                        "Éxito",
+                        f"Se guardaron {calificaciones_guardadas} calificaciones correctamente.",
+                    )
             elif errores:
-                messagebox.showerror("Errores", "No se pudo guardar ninguna calificación:\n" + "\n".join(errores))
+                messagebox.showerror(
+                    "Errores",
+                    "No se pudo guardar ninguna calificación:\n" + "\n".join(errores),
+                )
             else:
-                messagebox.showwarning("Sin datos", "No hay calificaciones para guardar.")
-                
+                messagebox.showwarning(
+                    "Sin datos", "No hay calificaciones para guardar."
+                )
+
         except Exception as e:
             messagebox.showerror("Error", f"Error al guardar calificaciones: {str(e)}")
 
@@ -674,7 +712,7 @@ def gestionar_calificaciones():
         try:
             total = 0
             materias_con_calif = 0
-            
+
             for entry in entries_calificaciones.values():
                 calificacion_str = entry.get().strip()
                 if calificacion_str:
@@ -685,13 +723,18 @@ def gestionar_calificaciones():
                             materias_con_calif += 1
                     except ValueError:
                         pass
-            
+
             if materias_con_calif > 0:
                 promedio = total / materias_con_calif
-                messagebox.showinfo("Promedio", f"Promedio actual: {promedio:.2f}\nMaterias con calificación: {materias_con_calif}")
+                messagebox.showinfo(
+                    "Promedio",
+                    f"Promedio actual: {promedio:.2f}\nMaterias con calificación: {materias_con_calif}",
+                )
             else:
-                messagebox.showwarning("Sin datos", "No hay calificaciones válidas para calcular promedio.")
-                
+                messagebox.showwarning(
+                    "Sin datos", "No hay calificaciones válidas para calcular promedio."
+                )
+
         except Exception as e:
             messagebox.showerror("Error", f"Error al calcular promedio: {str(e)}")
 
@@ -700,14 +743,32 @@ def gestionar_calificaciones():
     frame_botones_calif.pack(fill="x", padx=20, pady=20)
 
     # Botones
-    tk.Button(frame_botones_calif, text="Guardar Calificaciones", command=guardar_calificaciones, 
-             bg="green", fg="white", font=("Arial", 10, "bold")).pack(side="left", padx=5)
-    
-    tk.Button(frame_botones_calif, text="Calcular Promedio", command=calcular_mostrar_promedio, 
-             bg="blue", fg="white", font=("Arial", 10)).pack(side="left", padx=5)
-    
-    tk.Button(frame_botones_calif, text="Cerrar", command=ventana_calif.destroy, 
-             bg="red", fg="white", font=("Arial", 10)).pack(side="right", padx=5)
+    tk.Button(
+        frame_botones_calif,
+        text="Guardar Calificaciones",
+        command=guardar_calificaciones,
+        bg="green",
+        fg="white",
+        font=("Arial", 10, "bold"),
+    ).pack(side="left", padx=5)
+
+    tk.Button(
+        frame_botones_calif,
+        text="Calcular Promedio",
+        command=calcular_mostrar_promedio,
+        bg="blue",
+        fg="white",
+        font=("Arial", 10),
+    ).pack(side="left", padx=5)
+
+    tk.Button(
+        frame_botones_calif,
+        text="Cerrar",
+        command=ventana_calif.destroy,
+        bg="red",
+        fg="white",
+        font=("Arial", 10),
+    ).pack(side="right", padx=5)
 
     # Cargar calificaciones al abrir la ventana
     cargar_calificaciones_existentes()
@@ -741,7 +802,7 @@ btn_historial.pack(side="left", padx=5)
 
 btn_calificaciones = tk.Button(
     frame_botones,
-    text="Gestionar Calificaciones", 
+    text="Gestionar Calificaciones",
     command=gestionar_calificaciones,
     bg="orange",
     fg="white",

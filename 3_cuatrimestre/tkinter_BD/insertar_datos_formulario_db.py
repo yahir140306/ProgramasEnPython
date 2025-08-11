@@ -296,6 +296,7 @@ def calcular_promedio(matricula):
 
 # ==================== FUNCIONES ADICIONALES PARA CALIFICACIONES ====================
 
+
 def insertar_calificacion(matricula, materia, calificacion):
     """Inserta o actualiza una calificación"""
     try:
@@ -305,10 +306,10 @@ def insertar_calificacion(matricula, materia, calificacion):
             password="",
             database="registro_alumnos_poo",
         )
-        
+
         if conn.is_connected():
             cursor = conn.cursor()
-            
+
             # Usar INSERT ... ON DUPLICATE KEY UPDATE para actualizar si ya existe
             query = """
             INSERT INTO calificaciones (matricula, materia, calificacion)
@@ -317,11 +318,11 @@ def insertar_calificacion(matricula, materia, calificacion):
             calificacion = VALUES(calificacion),
             fecha_registro = CURRENT_TIMESTAMP
             """
-            
+
             cursor.execute(query, (matricula, materia, calificacion))
             conn.commit()
             return True
-        
+
     except Error as e:
         print(f"Error al insertar calificación: {e}")
         return False
@@ -341,21 +342,21 @@ def obtener_calificaciones_alumno(matricula):
             password="",
             database="registro_alumnos_poo",
         )
-        
+
         if conn.is_connected():
             cursor = conn.cursor()
-            
+
             query = """
             SELECT materia, calificacion, fecha_registro 
             FROM calificaciones 
             WHERE matricula = %s
             ORDER BY materia
             """
-            
+
             cursor.execute(query, (matricula,))
             calificaciones = cursor.fetchall()
             return calificaciones
-        
+
     except Error as e:
         print(f"Error al obtener calificaciones: {e}")
         return []
