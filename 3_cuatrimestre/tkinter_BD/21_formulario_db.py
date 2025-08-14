@@ -501,7 +501,7 @@ def generar_historial_academico():
 
         # Fecha alineada a la derecha
         elements.append(
-            Paragraph(f"Zacualtipán de Ángeles Hgo. a {fecha_formateada}", right_style)
+            Paragraph(f"Zacualtipán de Ángeles Hgo., a {fecha_formateada}", right_style)
         )
         elements.append(Spacer(1, 20))
 
@@ -524,7 +524,7 @@ def generar_historial_academico():
             textColor=colors.black,  # Cambiado de darkblue a black
             fontName="Helvetica-Bold",  # Agregado para negritas
         )
-        elements.append(Paragraph("DATOS DEL ESTUDIANTE", subtitle_style))
+        elements.append(Paragraph("Datos del estudiante", subtitle_style))
         elements.append(Spacer(1, 15))
 
         # Tabla de datos del estudiante con 2 columnas (etiqueta | valor)
@@ -539,27 +539,26 @@ def generar_historial_academico():
         )
 
         # Preparar datos usando Paragraph para textos largos
-        # Reorganizar para poner Matrícula y Sexo en la misma fila
 
-        # Estilo especial para la fila de Matrícula y Sexo (sin negritas en las etiquetas)
+        # Estilo especial para la fila de Matrícula y Sexo
         matricula_sexo_style = ParagraphStyle(
             "MatriculaSexo",
             parent=styles["Normal"],
             fontSize=10,
-            fontName="Helvetica",  # Sin negritas para las etiquetas
+            fontName="Helvetica",  # Sin negritas por defecto
             alignment=0,
         )
 
         datos_filas = [
             ["Nombre:", Paragraph(datos_alumno["nombre"], texto_style)],
             ["CURP:", Paragraph(datos_alumno["curp"], texto_style)],
-            # Matrícula y Sexo en la misma fila - FORMATO CORREGIDO
+            # Matrícula y Sexo en la misma fila
             [
+                "Matrícula:",
                 Paragraph(
-                    f"Matrícula: <b>{datos_alumno['matricula']}</b>          Sexo: <b>{datos_alumno['sexo']}</b>",
+                    f"<b>{datos_alumno['matricula']}</b>                    Sexo: <b>{datos_alumno['sexo']}</b>",
                     matricula_sexo_style,
                 ),
-                "",
             ],
             [
                 "Carrera:",
@@ -581,17 +580,9 @@ def generar_historial_academico():
                     # Columna izquierda (etiquetas) - sin negrita
                     ("FONTNAME", (0, 0), (0, -1), "Helvetica"),
                     ("FONTSIZE", (0, 0), (0, -1), 11),
-                    ("ALIGN", (0, 0), (0, -1), "RIGHT"),
+                    ("ALIGN", (0, 0), (0, -1), "LEFT"),  # Cambio de RIGHT a LEFT
                     # Columna derecha - los Paragraph ya tienen su estilo
                     ("ALIGN", (1, 0), (1, -1), "LEFT"),
-                    # Fila especial de Matrícula y Sexo (fila 2, índice 2)
-                    (
-                        "ALIGN",
-                        (0, 2),
-                        (-1, 2),
-                        "LEFT",
-                    ),  # Alineación izquierda para toda la fila
-                    ("SPAN", (0, 2), (1, 2)),  # Combinar las dos columnas en la fila 2
                     # Estilo general
                     ("VALIGN", (0, 0), (-1, -1), "TOP"),  # TOP para textos largos
                     ("TEXTCOLOR", (0, 0), (-1, -1), colors.black),
@@ -625,7 +616,12 @@ def generar_historial_academico():
                 [
                     # Encabezado - SIN FONDO DE COLOR
                     ("TEXTCOLOR", (0, 0), (-1, -1), colors.black),  # Todo en negro
-                    ("ALIGN", (0, 0), (-1, 0), "CENTER"),  # Solo encabezados centrados
+                    (
+                        "ALIGN",
+                        (0, 0),
+                        (-1, 0),
+                        "LEFT",
+                    ),  # Encabezados alineados a la IZQUIERDA
                     (
                         "ALIGN",
                         (0, 1),
@@ -644,7 +640,7 @@ def generar_historial_academico():
                     ("FONTNAME", (0, 1), (-1, -1), "Helvetica"),
                     ("FONTSIZE", (0, 1), (-1, -1), 10),
                     ("VALIGN", (0, 0), (-1, -1), "MIDDLE"),
-                    # LÍNEAS ESPECÍFICAS - Solo encabezado y separación de columnas
+                    # LÍNEAS ESPECÍFICAS - Solo encabezado y separación de columnas en las filas de materias
                     (
                         "LINEBELOW",
                         (0, 0),
@@ -654,11 +650,11 @@ def generar_historial_academico():
                     ),  # Línea debajo del encabezado
                     (
                         "LINEBEFORE",
-                        (1, 0),
+                        (1, 1),
                         (1, -1),
                         1,
                         colors.black,
-                    ),  # Línea vertical entre columnas
+                    ),  # Línea vertical entre columnas solo para las materias (no en el encabezado)
                     # SIN ROWBACKGROUNDS - Sin colores alternados
                 ]
             )
