@@ -41,11 +41,9 @@ root = tk.Tk()
 root.title("Registro de Alumnos")
 root.geometry("1100x600")
 
-# Crear directorios necesarios para imágenes
+# Definir directorio para imágenes (se creará solo cuando sea necesario)
 current_dir = os.path.dirname(__file__)
 fotos_dir = os.path.join(current_dir, "fotos")
-if not os.path.exists(fotos_dir):
-    os.makedirs(fotos_dir)
 
 frame = tk.Frame(root)
 frame.grid(padx=10, pady=10)
@@ -255,6 +253,10 @@ def agregar_alumno():
     try:
         # Manejar la foto si se seleccionó una
         if foto_seleccionada:
+            # Crear el directorio de fotos solo si no existe y se va a guardar una foto
+            if not os.path.exists(fotos_dir):
+                os.makedirs(fotos_dir)
+
             # Crear nombre para la foto usando la matrícula
             extension = os.path.splitext(foto_seleccionada)[1].lower()
             if extension not in [".jpg", ".jpeg", ".png", ".bmp", ".gif"]:
