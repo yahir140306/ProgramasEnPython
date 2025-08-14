@@ -1,8 +1,9 @@
 import tkinter as tk
 from tkinter import ttk
 from datetime import datetime
-from tkinter import messagebox
+from tkinter import messagebox, filedialog
 import os
+import shutil
 from insertar_datos_formulario_db import (
     insertar_alumno,
     obtener_alumnos,
@@ -52,6 +53,9 @@ frame.grid(padx=10, pady=10)
 # Variable para controlar si estamos editando
 editando = False
 matricula_original = None
+
+# Variable para la ruta de la foto seleccionada
+foto_seleccionada = None
 
 
 def solo_numeros(texto):
@@ -147,6 +151,41 @@ cbb_carrera = ttk.Combobox(frame, state="readonly", width="50")
 cbb_carrera.grid(row=6, column=3, padx=20, pady=20, sticky="w")
 cbb_carrera.set("Seleccione carrera...")
 
+# Campo para foto
+tk.Label(frame, text="Foto:").grid(row=8, column=0, sticky="w")
+btn_seleccionar_foto = tk.Button(
+    frame, text="Seleccionar Foto", command=lambda: seleccionar_foto()
+)
+btn_seleccionar_foto.grid(row=8, column=1, sticky="w")
+lbl_foto_seleccionada = tk.Label(frame, text="Ninguna foto seleccionada", fg="gray")
+lbl_foto_seleccionada.grid(row=8, column=2, columnspan=2, sticky="w", padx=10)
+
+
+def seleccionar_foto():
+    """Función para seleccionar una foto"""
+    global foto_seleccionada
+    tipos_archivo = [
+        ("Imágenes", "*.jpg *.jpeg *.png *.bmp *.gif"),
+        ("JPEG", "*.jpg *.jpeg"),
+        ("PNG", "*.png"),
+        ("Todos los archivos", "*.*"),
+    ]
+
+    archivo = filedialog.askopenfilename(
+        title="Seleccionar foto del alumno",
+        filetypes=tipos_archivo,
+        initialdir=os.path.expanduser("~"),
+    )
+
+    if archivo:
+        foto_seleccionada = archivo
+        # Mostrar solo el nombre del archivo, no la ruta completa
+        nombre_archivo = os.path.basename(archivo)
+        lbl_foto_seleccionada.config(text=f"Foto: {nombre_archivo}", fg="green")
+    else:
+        foto_seleccionada = None
+        lbl_foto_seleccionada.config(text="Ninguna foto seleccionada", fg="gray")
+
 
 def validar_fecha(fecha_str):
     try:
@@ -172,6 +211,7 @@ def cargar_alumnos():
 
 def limpiar_campos():
     """Limpia todos los campos del formulario"""
+    global foto_seleccionada
     entry_matricula.delete(0, tk.END)
     entry_nombre.delete(0, tk.END)
     entry_apellido.delete(0, tk.END)
@@ -179,6 +219,8 @@ def limpiar_campos():
     sexo_var.set("")
     cbb_direccion.set("Seleccione...")
     cbb_carrera.set("Seleccione carrera...")
+    foto_seleccionada = None
+    lbl_foto_seleccionada.config(text="Ninguna foto seleccionada", fg="gray")
 
 
 def agregar_alumno():
@@ -211,6 +253,24 @@ def agregar_alumno():
         return
 
     try:
+        # Manejar la foto si se seleccionó una
+        if foto_seleccionada:
+            # Crear nombre para la foto usando la matrícula
+            extension = os.path.splitext(foto_seleccionada)[1].lower()
+            if extension not in [".jpg", ".jpeg", ".png", ".bmp", ".gif"]:
+                extension = ".jpg"  # Extensión por defecto
+
+            nombre_foto = f"{matricula}{extension}"
+            ruta_destino = os.path.join(fotos_dir, nombre_foto)
+
+            try:
+                # Copiar la foto al directorio de fotos
+                shutil.copy2(foto_seleccionada, ruta_destino)
+            except Exception as e:
+                messagebox.showwarning(
+                    "Advertencia", f"No se pudo copiar la foto: {str(e)}"
+                )
+
         if editando:
             if matricula != matricula_original and verificar_matricula_existe_excepto(
                 matricula, matricula_original
@@ -505,16 +565,6 @@ def generar_historial_academico():
         )
         elements.append(Spacer(1, 20))
 
-        # Foto del estudiante centrada (opcional)
-        foto_path = os.path.join(
-            os.path.dirname(__file__), f"fotos/{datos_alumno['matricula']}.jpg"
-        )
-        if os.path.exists(foto_path):
-            elements.append(
-                ReportLabImage(foto_path, width=1.5 * inch, height=2 * inch)
-            )
-            elements.append(Spacer(1, 15))
-
         # Subtítulo "DATOS DEL ESTUDIANTE"
         subtitle_style = ParagraphStyle(
             "Subtitle",
@@ -524,8 +574,17 @@ def generar_historial_academico():
             textColor=colors.black,  # Cambiado de darkblue a black
             fontName="Helvetica-Bold",  # Agregado para negritas
         )
-        elements.append(Paragraph("Datos del estudiante", subtitle_style))
+        elements.append(Paragraph("DATOS DEL ESTUDIANTE", subtitle_style))
         elements.append(Spacer(1, 15))
+
+        # Buscar foto del estudiante con diferentes extensiones
+        foto_path = None
+        extensiones = [".jpg", ".jpeg", ".png", ".bmp", ".gif"]
+        for ext in extensiones:
+            ruta_foto = os.path.join(fotos_dir, f"{datos_alumno['matricula']}{ext}")
+            if os.path.exists(ruta_foto):
+                foto_path = ruta_foto
+                break
 
         # Tabla de datos del estudiante con 2 columnas (etiqueta | valor)
         # Estilo para textos largos que se ajusten automáticamente
@@ -556,7 +615,7 @@ def generar_historial_academico():
             [
                 "Matrícula:",
                 Paragraph(
-                    f"<b>{datos_alumno['matricula']}</b>                    Sexo: <b>{datos_alumno['sexo']}</b>",
+                    f"<b>{datos_alumno['matricula']}</b>                              Sexo: <b>{datos_alumno['sexo']}</b>",
                     matricula_sexo_style,
                 ),
             ],
@@ -570,32 +629,75 @@ def generar_historial_academico():
             ],  # Se ajustará automáticamente
         ]
 
-        tabla_datos = Table(
-            datos_filas,
-            colWidths=[1.8 * inch, 4.2 * inch],  # Mantenemos anchos
-        )
-        tabla_datos.setStyle(
-            TableStyle(
-                [
-                    # Columna izquierda (etiquetas) - sin negrita
-                    ("FONTNAME", (0, 0), (0, -1), "Helvetica"),
-                    ("FONTSIZE", (0, 0), (0, -1), 11),
-                    ("ALIGN", (0, 0), (0, -1), "LEFT"),  # Cambio de RIGHT a LEFT
-                    # Columna derecha - los Paragraph ya tienen su estilo
-                    ("ALIGN", (1, 0), (1, -1), "LEFT"),
-                    # Estilo general
-                    ("VALIGN", (0, 0), (-1, -1), "TOP"),  # TOP para textos largos
-                    ("TEXTCOLOR", (0, 0), (-1, -1), colors.black),
-                    # SIN GRID - para que no se vean las líneas
-                    ("LEFTPADDING", (0, 0), (-1, -1), 10),
-                    ("RIGHTPADDING", (0, 0), (-1, -1), 10),
-                    ("TOPPADDING", (0, 0), (-1, -1), 3),  # REDUCIDO: de 8 a 3
-                    ("BOTTOMPADDING", (0, 0), (-1, -1), 3),  # REDUCIDO: de 8 a 3
-                ]
-            )
-        )
+        # Crear tabla principal que incluya foto y datos
+        if foto_path:
+            # Si hay foto, crear tabla con foto a la izquierda y datos a la derecha
+            foto_img = ReportLabImage(foto_path, width=1.3 * inch, height=1.7 * inch)
 
-        elements.append(tabla_datos)
+            tabla_datos = Table(
+                datos_filas,
+                colWidths=[1.8 * inch, 4.2 * inch],
+            )
+            tabla_datos.setStyle(
+                TableStyle(
+                    [
+                        # Columna izquierda (etiquetas) - sin negrita
+                        ("FONTNAME", (0, 0), (0, -1), "Helvetica"),
+                        ("FONTSIZE", (0, 0), (0, -1), 11),
+                        ("ALIGN", (0, 0), (0, -1), "LEFT"),
+                        # Columna derecha - los Paragraph ya tienen su estilo
+                        ("ALIGN", (1, 0), (1, -1), "LEFT"),
+                        # Estilo general
+                        ("VALIGN", (0, 0), (-1, -1), "TOP"),
+                        ("TEXTCOLOR", (0, 0), (-1, -1), colors.black),
+                        ("LEFTPADDING", (0, 0), (-1, -1), 10),
+                        ("RIGHTPADDING", (0, 0), (-1, -1), 10),
+                        ("TOPPADDING", (0, 0), (-1, -1), 3),
+                        ("BOTTOMPADDING", (0, 0), (-1, -1), 3),
+                    ]
+                )
+            )
+
+            # Crear tabla principal con foto y datos
+            tabla_principal = Table(
+                [[foto_img, tabla_datos]], colWidths=[1.5 * inch, 6.0 * inch]
+            )
+            tabla_principal.setStyle(
+                TableStyle(
+                    [
+                        ("VALIGN", (0, 0), (-1, -1), "TOP"),
+                        ("LEFTPADDING", (0, 0), (-1, -1), 5),
+                        ("RIGHTPADDING", (0, 0), (-1, -1), 5),
+                    ]
+                )
+            )
+            elements.append(tabla_principal)
+        else:
+            # Si no hay foto, usar tabla normal
+            tabla_datos = Table(
+                datos_filas,
+                colWidths=[1.8 * inch, 4.2 * inch],
+            )
+            tabla_datos.setStyle(
+                TableStyle(
+                    [
+                        # Columna izquierda (etiquetas) - sin negrita
+                        ("FONTNAME", (0, 0), (0, -1), "Helvetica"),
+                        ("FONTSIZE", (0, 0), (0, -1), 11),
+                        ("ALIGN", (0, 0), (0, -1), "LEFT"),
+                        # Columna derecha - los Paragraph ya tienen su estilo
+                        ("ALIGN", (1, 0), (1, -1), "LEFT"),
+                        # Estilo general
+                        ("VALIGN", (0, 0), (-1, -1), "TOP"),
+                        ("TEXTCOLOR", (0, 0), (-1, -1), colors.black),
+                        ("LEFTPADDING", (0, 0), (-1, -1), 10),
+                        ("RIGHTPADDING", (0, 0), (-1, -1), 10),
+                        ("TOPPADDING", (0, 0), (-1, -1), 3),
+                        ("BOTTOMPADDING", (0, 0), (-1, -1), 3),
+                    ]
+                )
+            )
+            elements.append(tabla_datos)
         elements.append(Spacer(1, 20))
 
         # Título de calificaciones
