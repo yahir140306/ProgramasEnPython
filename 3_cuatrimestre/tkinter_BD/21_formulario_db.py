@@ -27,6 +27,7 @@ try:
     from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
     from reportlab.lib import colors
     from reportlab.lib.units import inch
+    from PIL import Image as PILImage  # Para obtener dimensiones de imágenes
 
     REPORTLAB_AVAILABLE = True
 except ImportError:
@@ -403,8 +404,32 @@ def generar_historial_academico():
         else:
             promedio = 0.0
 
-        # Generar PDF
-        fecha_actual = datetime.now().strftime("%d de %B de %Y")
+        # Generar PDF con fecha en español
+        # Diccionario de meses en español
+        meses_es = {
+            "January": "enero",
+            "February": "febrero",
+            "March": "marzo",
+            "April": "abril",
+            "May": "mayo",
+            "June": "junio",
+            "July": "julio",
+            "August": "agosto",
+            "September": "septiembre",
+            "October": "octubre",
+            "November": "noviembre",
+            "December": "diciembre",
+        }
+
+        fecha_obj = datetime.now()
+        dia = fecha_obj.strftime("%d")
+        mes_en = fecha_obj.strftime("%B")  # Mes en inglés
+        mes_es = meses_es.get(mes_en, mes_en.lower())  # Convertir a español
+        año = fecha_obj.strftime("%Y")
+
+        # Formatear fecha con día y mes en negritas
+        fecha_formateada = f"<b>{dia} de</b> <b>{mes_es}</b> de {año}"
+
         nombre_archivo = f"historial_academico_{datos_alumno['matricula']}_{datetime.now().strftime('%Y%m%d_%H%M%S')}.pdf"
         ruta_descargas = os.path.join(os.path.expanduser("~"), "Downloads")
         ruta_archivo = os.path.join(ruta_descargas, nombre_archivo)
@@ -435,8 +460,36 @@ def generar_historial_academico():
         # Logo centrado (usar logos.png existente)
         logo_path = os.path.join(os.path.dirname(__file__), "logos.png")
         if os.path.exists(logo_path):
-            elements.append(ReportLabImage(logo_path, width=2 * inch, height=2 * inch))
-            elements.append(Spacer(1, 12))
+            try:
+                # Obtener dimensiones originales del logo para mantener proporciones
+                with PILImage.open(logo_path) as img:
+                    original_width, original_height = img.size
+
+                # Configurar ancho deseado (más ancho para que se extienda horizontalmente)
+                desired_width = 6.5 * inch  # Ancho más grande - aumentado de 5 a 6.5
+
+                # Calcular altura proporcional
+                aspect_ratio = original_height / original_width
+                calculated_height = desired_width * aspect_ratio
+
+                # Limitar altura máxima para que no sea demasiado alta
+                max_height = 2.5 * inch  # También aumenté un poco la altura máxima
+                if calculated_height > max_height:
+                    calculated_height = max_height
+                    desired_width = calculated_height / aspect_ratio
+
+                elements.append(
+                    ReportLabImage(
+                        logo_path, width=desired_width, height=calculated_height
+                    )
+                )
+                elements.append(Spacer(1, 12))
+            except Exception:
+                # Si hay error con las dimensiones, usar tamaño fijo más ancho
+                elements.append(
+                    ReportLabImage(logo_path, width=6.5 * inch, height=2 * inch)
+                )
+                elements.append(Spacer(1, 12))
         else:
             # Si no hay logo, agregar título de la institución
             elements.append(
@@ -448,12 +501,8 @@ def generar_historial_academico():
 
         # Fecha alineada a la derecha
         elements.append(
-            Paragraph(f"Zacualtipán de Ángeles Hgo. a {fecha_actual}", right_style)
+            Paragraph(f"Zacualtipán de Ángeles Hgo. a {fecha_formateada}", right_style)
         )
-        elements.append(Spacer(1, 20))
-
-        # Título del documento
-        elements.append(Paragraph("HISTORIAL ACADÉMICO", title_style))
         elements.append(Spacer(1, 20))
 
         # Foto del estudiante centrada (opcional)
@@ -466,24 +515,104 @@ def generar_historial_academico():
             )
             elements.append(Spacer(1, 15))
 
-        # Datos del estudiante
-        datos_texto = f"""
-        <b>Nombre:</b> {datos_alumno["nombre"]}<br/>
-        <b>CURP:</b> {datos_alumno["curp"]}<br/>
-        <b>Matrícula:</b> {datos_alumno["matricula"]}<br/>
-        <b>Sexo:</b> {datos_alumno["sexo"]}<br/>
-        <b>Carrera:</b> {datos_alumno["carrera"]}<br/>
-        <b>Dirección:</b> {datos_alumno["direccion"]}
-        """
-        elements.append(Paragraph(datos_texto, centered_style))
-        elements.append(Spacer(1, 25))
+        # Subtítulo "DATOS DEL ESTUDIANTE"
+        subtitle_style = ParagraphStyle(
+            "Subtitle",
+            parent=styles["Heading2"],
+            alignment=1,
+            fontSize=12,  # Reducido de 14 a 12
+            textColor=colors.black,  # Cambiado de darkblue a black
+            fontName="Helvetica-Bold",  # Agregado para negritas
+        )
+        elements.append(Paragraph("DATOS DEL ESTUDIANTE", subtitle_style))
+        elements.append(Spacer(1, 15))
+
+        # Tabla de datos del estudiante con 2 columnas (etiqueta | valor)
+        # Estilo para textos largos que se ajusten automáticamente
+        texto_style = ParagraphStyle(
+            "TextoTabla",
+            parent=styles["Normal"],
+            fontSize=10,
+            fontName="Helvetica-Bold",
+            alignment=0,  # Alineación izquierda
+            # leading=12,  # Espaciado entre líneas
+        )
+
+        # Preparar datos usando Paragraph para textos largos
+        # Reorganizar para poner Matrícula y Sexo en la misma fila
+
+        # Estilo especial para la fila de Matrícula y Sexo (sin negritas en las etiquetas)
+        matricula_sexo_style = ParagraphStyle(
+            "MatriculaSexo",
+            parent=styles["Normal"],
+            fontSize=10,
+            fontName="Helvetica",  # Sin negritas para las etiquetas
+            alignment=0,
+        )
+
+        datos_filas = [
+            ["Nombre:", Paragraph(datos_alumno["nombre"], texto_style)],
+            ["CURP:", Paragraph(datos_alumno["curp"], texto_style)],
+            # Matrícula y Sexo en la misma fila - FORMATO CORREGIDO
+            [
+                Paragraph(
+                    f"Matrícula: <b>{datos_alumno['matricula']}</b>          Sexo: <b>{datos_alumno['sexo']}</b>",
+                    matricula_sexo_style,
+                ),
+                "",
+            ],
+            [
+                "Carrera:",
+                Paragraph(datos_alumno["carrera"], texto_style),
+            ],  # Se ajustará automáticamente
+            [
+                "Dirección:",
+                Paragraph(datos_alumno["direccion"], texto_style),
+            ],  # Se ajustará automáticamente
+        ]
+
+        tabla_datos = Table(
+            datos_filas,
+            colWidths=[1.8 * inch, 4.2 * inch],  # Mantenemos anchos
+        )
+        tabla_datos.setStyle(
+            TableStyle(
+                [
+                    # Columna izquierda (etiquetas) - sin negrita
+                    ("FONTNAME", (0, 0), (0, -1), "Helvetica"),
+                    ("FONTSIZE", (0, 0), (0, -1), 11),
+                    ("ALIGN", (0, 0), (0, -1), "RIGHT"),
+                    # Columna derecha - los Paragraph ya tienen su estilo
+                    ("ALIGN", (1, 0), (1, -1), "LEFT"),
+                    # Fila especial de Matrícula y Sexo (fila 2, índice 2)
+                    (
+                        "ALIGN",
+                        (0, 2),
+                        (-1, 2),
+                        "LEFT",
+                    ),  # Alineación izquierda para toda la fila
+                    ("SPAN", (0, 2), (1, 2)),  # Combinar las dos columnas en la fila 2
+                    # Estilo general
+                    ("VALIGN", (0, 0), (-1, -1), "TOP"),  # TOP para textos largos
+                    ("TEXTCOLOR", (0, 0), (-1, -1), colors.black),
+                    # SIN GRID - para que no se vean las líneas
+                    ("LEFTPADDING", (0, 0), (-1, -1), 10),
+                    ("RIGHTPADDING", (0, 0), (-1, -1), 10),
+                    ("TOPPADDING", (0, 0), (-1, -1), 3),  # REDUCIDO: de 8 a 3
+                    ("BOTTOMPADDING", (0, 0), (-1, -1), 3),  # REDUCIDO: de 8 a 3
+                ]
+            )
+        )
+
+        elements.append(tabla_datos)
+        elements.append(Spacer(1, 20))
 
         # Título de calificaciones
-        elements.append(Paragraph("<b><u>CALIFICACIONES</u></b>", centered_style))
+        elements.append(Paragraph("<b>Calificaciones</b>", centered_style))
         elements.append(Spacer(1, 15))
 
         # Tabla de calificaciones
-        tabla_data = [["MATERIA", "CALIFICACIÓN"]]
+        tabla_data = [["Materia", "Calificación"]]
         for materia, calificacion in materias:
             if calificacion is not None:
                 tabla_data.append([materia, f"{calificacion:.1f}"])
@@ -494,24 +623,43 @@ def generar_historial_academico():
         tabla_calificaciones.setStyle(
             TableStyle(
                 [
-                    # Encabezado
-                    ("BACKGROUND", (0, 0), (-1, 0), colors.lightblue),
-                    ("TEXTCOLOR", (0, 0), (-1, 0), colors.black),
-                    ("ALIGN", (0, 0), (-1, -1), "CENTER"),
-                    ("FONTNAME", (0, 0), (-1, 0), "Helvetica-Bold"),
+                    # Encabezado - SIN FONDO DE COLOR
+                    ("TEXTCOLOR", (0, 0), (-1, -1), colors.black),  # Todo en negro
+                    ("ALIGN", (0, 0), (-1, 0), "CENTER"),  # Solo encabezados centrados
+                    (
+                        "ALIGN",
+                        (0, 1),
+                        (0, -1),
+                        "LEFT",
+                    ),  # Materias alineadas a la IZQUIERDA
+                    ("ALIGN", (1, 1), (1, -1), "CENTER"),  # Calificaciones centradas
+                    (
+                        "FONTNAME",
+                        (0, 0),
+                        (-1, 0),
+                        "Helvetica-Bold",
+                    ),  # Solo encabezado en negrita
                     ("FONTSIZE", (0, 0), (-1, 0), 12),
                     # Contenido
                     ("FONTNAME", (0, 1), (-1, -1), "Helvetica"),
                     ("FONTSIZE", (0, 1), (-1, -1), 10),
-                    ("GRID", (0, 0), (-1, -1), 1, colors.black),
                     ("VALIGN", (0, 0), (-1, -1), "MIDDLE"),
-                    # Alternar colores de filas
+                    # LÍNEAS ESPECÍFICAS - Solo encabezado y separación de columnas
                     (
-                        "ROWBACKGROUNDS",
-                        (0, 1),
-                        (-1, -1),
-                        [colors.white, colors.lightgrey],
-                    ),
+                        "LINEBELOW",
+                        (0, 0),
+                        (-1, 0),
+                        1,
+                        colors.black,
+                    ),  # Línea debajo del encabezado
+                    (
+                        "LINEBEFORE",
+                        (1, 0),
+                        (1, -1),
+                        1,
+                        colors.black,
+                    ),  # Línea vertical entre columnas
+                    # SIN ROWBACKGROUNDS - Sin colores alternados
                 ]
             )
         )
@@ -523,12 +671,11 @@ def generar_historial_academico():
         promedio_style = ParagraphStyle(
             "Promedio",
             parent=styles["Normal"],
-            alignment=1,
-            fontSize=14,
-            textColor=colors.darkblue,
+            alignment=2,  # Cambiado de 1 (centro) a 2 (derecha)
+            fontSize=11,  # Reducido de 14 a 11
         )
         elements.append(
-            Paragraph(f"<b>PROMEDIO GENERAL: {promedio:.2f}</b>", promedio_style)
+            Paragraph(f"<b>Promedio General: <u>{promedio:.2f}</u></b>", promedio_style)
         )
 
         # Generar el PDF
