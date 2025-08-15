@@ -1,12 +1,31 @@
-CREATE DATABASE IF NOT EXISTS veterinaria_peluditos;
-USE veterinaria_peluditos;
-
-CREATE TABLE mascotas (
-    id INT AUTO_INCREMENT PRIMARY KEY,
-    nombre VARCHAR(100) NOT NULL,
-    dueno VARCHAR(100) NOT NULL,
-    edad INT NOT NULL,
-    raza VARCHAR(100) NOT NULL,
-    imagen LONGBLOB,
-    fecha_registro TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+CREATE TABLE `alumnos` (
+  `matricula` varchar(20) NOT NULL,
+  `nombre` varchar(100) NOT NULL,
+  `apellido` varchar(100) NOT NULL,
+  `curp` varchar(18) DEFAULT NULL,
+  `fecha_nacimiento` date NOT NULL,
+  `sexo` enum('Hombre','Mujer') NOT NULL,
+  `direccion` varchar(200) NOT NULL,
+  `carrera` varchar(300) NOT NULL,
+  `foto` longblob DEFAULT NULL,
+  `fecha_registro` timestamp NOT NULL DEFAULT current_timestamp(),
+  UNIQUE KEY `matricula` (`matricula`),
+  UNIQUE KEY `unique_curp` (`curp`),
+  KEY `idx_matricula` (`matricula`),
+  KEY `idx_nombre` (`nombre`,`apellido`)
 );
+
+CREATE TABLE `calificaciones` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `matricula` varchar(20) NOT NULL,
+  `materia` varchar(100) NOT NULL,
+  `calificacion` decimal(4,2) NOT NULL CHECK (`calificacion` >= 0 and `calificacion` <= 100),
+  `fecha_registro` timestamp NOT NULL DEFAULT current_timestamp(),
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `unique_materia_alumno` (`matricula`,`materia`),
+  KEY `idx_matricula` (`matricula`),
+  KEY `idx_materia` (`materia`),
+  CONSTRAINT `calificaciones_ibfk_1` FOREIGN KEY (`matricula`) REFERENCES `alumnos` (`matricula`) ON DELETE CASCADE ON UPDATE CASCADE,
+  CONSTRAINT `fk_calificaciones_alumno` FOREIGN KEY (`matricula`) REFERENCES `alumnos` (`matricula`) ON DELETE CASCADE ON UPDATE CASCADE
+);
+
