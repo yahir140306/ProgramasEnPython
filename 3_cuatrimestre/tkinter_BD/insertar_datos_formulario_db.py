@@ -2,7 +2,17 @@ import mysql.connector
 from mysql.connector import Error
 
 
-def insertar_alumno(matricula, nombre, apellido, fecha_nac, sexo, direccion, carrera):
+def insertar_alumno(
+    matricula,
+    nombre,
+    apellido,
+    curp,
+    fecha_nac,
+    sexo,
+    direccion,
+    carrera,
+    foto_blob=None,
+):
     try:
         conn = mysql.connector.connect(
             host="localhost",
@@ -14,10 +24,20 @@ def insertar_alumno(matricula, nombre, apellido, fecha_nac, sexo, direccion, car
         if conn.is_connected():
             cursor = conn.cursor()
             query = """
-                INSERT INTO alumnos (matricula, nombre, apellido, fecha_nacimiento, sexo, direccion, carrera)
-                VALUES (%s, %s, %s, %s, %s, %s, %s)
+                INSERT INTO alumnos (matricula, nombre, apellido, curp, fecha_nacimiento, sexo, direccion, carrera, foto)
+                VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s)
             """
-            valores = (matricula, nombre, apellido, fecha_nac, sexo, direccion, carrera)
+            valores = (
+                matricula,
+                nombre,
+                apellido,
+                curp,
+                fecha_nac,
+                sexo,
+                direccion,
+                carrera,
+                foto_blob,
+            )
             cursor.execute(query, valores)
             conn.commit()
             print("Alumno insertado correctamente.")
@@ -70,7 +90,7 @@ def obtener_alumnos():
         if conn.is_connected():
             cursor = conn.cursor()
             query = """
-                SELECT matricula, nombre, apellido, fecha_nacimiento, sexo, direccion, carrera
+                SELECT matricula, nombre, apellido, curp, fecha_nacimiento, sexo, direccion, carrera
                 FROM alumnos
                 ORDER BY matricula
             """
@@ -100,7 +120,7 @@ def obtener_alumno_por_matricula(matricula):
         if conn.is_connected():
             cursor = conn.cursor()
             query = """
-                SELECT matricula, nombre, apellido, fecha_nacimiento, sexo, direccion, carrera
+                SELECT matricula, nombre, apellido, curp, fecha_nacimiento, sexo, direccion, carrera, foto
                 FROM alumnos
                 WHERE matricula = %s
             """
@@ -119,7 +139,16 @@ def obtener_alumno_por_matricula(matricula):
 
 
 def actualizar_alumno(
-    matricula_original, matricula, nombre, apellido, fecha_nac, sexo, direccion, carrera
+    matricula_original,
+    matricula,
+    nombre,
+    apellido,
+    curp,
+    fecha_nac,
+    sexo,
+    direccion,
+    carrera,
+    foto_blob=None,
 ):
     try:
         conn = mysql.connector.connect(
@@ -131,22 +160,46 @@ def actualizar_alumno(
 
         if conn.is_connected():
             cursor = conn.cursor()
-            query = """
-                UPDATE alumnos 
-                SET matricula = %s, nombre = %s, apellido = %s, fecha_nacimiento = %s, 
-                    sexo = %s, direccion = %s, carrera = %s
-                WHERE matricula = %s
-            """
-            valores = (
-                matricula,
-                nombre,
-                apellido,
-                fecha_nac,
-                sexo,
-                direccion,
-                carrera,
-                matricula_original,
-            )
+
+            # Si hay foto_blob, actualizar también la foto
+            if foto_blob is not None:
+                query = """
+                    UPDATE alumnos 
+                    SET matricula = %s, nombre = %s, apellido = %s, curp = %s, fecha_nacimiento = %s, 
+                        sexo = %s, direccion = %s, carrera = %s, foto = %s
+                    WHERE matricula = %s
+                """
+                valores = (
+                    matricula,
+                    nombre,
+                    apellido,
+                    curp,
+                    fecha_nac,
+                    sexo,
+                    direccion,
+                    carrera,
+                    foto_blob,
+                    matricula_original,
+                )
+            else:
+                query = """
+                    UPDATE alumnos 
+                    SET matricula = %s, nombre = %s, apellido = %s, curp = %s, fecha_nacimiento = %s, 
+                        sexo = %s, direccion = %s, carrera = %s
+                    WHERE matricula = %s
+                """
+                valores = (
+                    matricula,
+                    nombre,
+                    apellido,
+                    curp,
+                    fecha_nac,
+                    sexo,
+                    direccion,
+                    carrera,
+                    matricula_original,
+                )
+
             cursor.execute(query, valores)
             conn.commit()
             print("Alumno actualizado correctamente.")

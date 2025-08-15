@@ -3,7 +3,7 @@ from tkinter import ttk
 from datetime import datetime
 from tkinter import messagebox, filedialog
 import os
-import shutil
+from PIL import Image, ImageTk
 from insertar_datos_formulario_db import (
     insertar_alumno,
     obtener_alumnos,
@@ -82,6 +82,10 @@ tk.Label(frame, text="Apellido:").grid(row=2, column=2, sticky="w")
 entry_apellido = tk.Entry(frame)
 entry_apellido.grid(row=2, column=3)
 
+tk.Label(frame, text="CURP:").grid(row=3, column=0, sticky="w")
+entry_curp = tk.Entry(frame)
+entry_curp.grid(row=3, column=1)
+
 tk.Label(frame, text="Fecha Nacimiento (YYYY-MM-DD):").grid(row=4, column=0, sticky="w")
 entry_fecha_nac = tk.Entry(frame)
 entry_fecha_nac.grid(row=4, column=1)
@@ -150,17 +154,26 @@ cbb_carrera.grid(row=6, column=3, padx=20, pady=20, sticky="w")
 cbb_carrera.set("Seleccione carrera...")
 
 # Campo para foto
-tk.Label(frame, text="Foto:").grid(row=8, column=0, sticky="w")
+tk.Label(frame, text="Foto:").grid(row=7, column=0, sticky="w", padx=20, pady=10)
 btn_seleccionar_foto = tk.Button(
-    frame, text="Seleccionar Foto", command=lambda: seleccionar_foto()
+    frame,
+    text="Seleccionar Foto",
+    command=lambda: seleccionar_foto(),
+    font=("Arial", 10, "bold"),
 )
-btn_seleccionar_foto.grid(row=8, column=1, sticky="w")
+btn_seleccionar_foto.grid(row=7, column=1, sticky="w", padx=20, pady=10)
 lbl_foto_seleccionada = tk.Label(frame, text="Ninguna foto seleccionada", fg="gray")
-lbl_foto_seleccionada.grid(row=8, column=2, columnspan=2, sticky="w", padx=10)
+lbl_foto_seleccionada.grid(row=7, column=2, columnspan=2, sticky="w", padx=10, pady=10)
+
+# Label para mostrar vista previa de la imagen
+lbl_vista_previa = tk.Label(
+    frame, text="Vista previa", relief="sunken", bg="white", width=20, height=8
+)
+lbl_vista_previa.grid(row=8, column=0, columnspan=4, pady=10, padx=20)
 
 
 def seleccionar_foto():
-    """Función para seleccionar una foto"""
+    """Función para seleccionar una foto y mostrar vista previa"""
     global foto_seleccionada
     tipos_archivo = [
         ("Imágenes", "*.jpg *.jpeg *.png *.bmp *.gif"),
@@ -176,13 +189,67 @@ def seleccionar_foto():
     )
 
     if archivo:
-        foto_seleccionada = archivo
-        # Mostrar solo el nombre del archivo, no la ruta completa
-        nombre_archivo = os.path.basename(archivo)
-        lbl_foto_seleccionada.config(text=f"Foto: {nombre_archivo}", fg="green")
+        try:
+            # Cargar y mostrar vista previa de la imagen
+            imagen_pil = Image.open(archivo)
+            imagen_pil.thumbnail((150, 200))  # Redimensionar para vista previa
+            foto_preview = ImageTk.PhotoImage(imagen_pil)
+            lbl_vista_previa.config(image=foto_preview)
+            lbl_vista_previa.image = foto_preview  # Mantener referencia
+
+            foto_seleccionada = archivo
+            nombre_archivo = os.path.basename(archivo)
+            lbl_foto_seleccionada.config(text=f"Foto: {nombre_archivo}", fg="green")
+
+        except Exception as e:
+            messagebox.showerror("Error", f"No se pudo cargar la imagen: {e}")
+            foto_seleccionada = None
+            lbl_foto_seleccionada.config(text="Error al cargar imagen", fg="red")
+            lbl_vista_previa.config(image="")
+            lbl_vista_previa.image = None
     else:
         foto_seleccionada = None
         lbl_foto_seleccionada.config(text="Ninguna foto seleccionada", fg="gray")
+        lbl_vista_previa.config(image="")
+        lbl_vista_previa.image = None
+
+
+def convertir_imagen_a_blob(ruta_imagen):
+    """Convierte una imagen a bytes (BLOB) para guardar en la base de datos"""
+    try:
+        with open(ruta_imagen, "rb") as file:
+            return file.read()
+    except Exception as e:
+        print(f"Error al convertir imagen a BLOB: {e}")
+        return None
+
+
+def crear_imagen_temp_desde_blob(foto_blob, matricula):
+    """Crea un archivo temporal de imagen desde un BLOB para usar en el PDF"""
+    if foto_blob is None:
+        print(f"No hay foto para matrícula {matricula}")
+        return None
+
+    try:
+        # Crear un archivo temporal para la imagen
+        import tempfile
+
+        temp_dir = tempfile.gettempdir()
+        temp_path = os.path.join(temp_dir, f"temp_foto_{matricula}.jpg")
+
+        print(f"Creando imagen temporal para matrícula {matricula}")
+        print(f"Tamaño del BLOB: {len(foto_blob)} bytes")
+        print(f"Ruta temporal: {temp_path}")
+
+        # Escribir los bytes del BLOB al archivo temporal
+        with open(temp_path, "wb") as temp_file:
+            temp_file.write(foto_blob)
+
+        print(f"Imagen temporal creada exitosamente: {temp_path}")
+        return temp_path
+    except Exception as e:
+        print(f"Error al crear imagen temporal: {e}")
+        return None
 
 
 def validar_fecha(fecha_str):
@@ -213,12 +280,15 @@ def limpiar_campos():
     entry_matricula.delete(0, tk.END)
     entry_nombre.delete(0, tk.END)
     entry_apellido.delete(0, tk.END)
+    entry_curp.delete(0, tk.END)
     entry_fecha_nac.delete(0, tk.END)
     sexo_var.set("")
     cbb_direccion.set("Seleccione...")
     cbb_carrera.set("Seleccione carrera...")
     foto_seleccionada = None
     lbl_foto_seleccionada.config(text="Ninguna foto seleccionada", fg="gray")
+    lbl_vista_previa.config(image="")
+    lbl_vista_previa.image = None
 
 
 def agregar_alumno():
@@ -227,6 +297,7 @@ def agregar_alumno():
     matricula = entry_matricula.get().strip()
     nombre = entry_nombre.get().strip()
     apellido = entry_apellido.get().strip()
+    curp = entry_curp.get().strip()
     fecha_nac = entry_fecha_nac.get().strip()
     sexo = sexo_var.get()
     direccion = cbb_direccion.get()
@@ -236,6 +307,7 @@ def agregar_alumno():
         matricula
         and nombre
         and apellido
+        and curp
         and fecha_nac
         and sexo
         and direccion
@@ -244,6 +316,9 @@ def agregar_alumno():
         messagebox.showerror("Error", "Todos los campos son obligatorios.")
         return
 
+    # Convertir CURP a mayúsculas
+    curp = curp.upper()
+
     if not validar_fecha(fecha_nac):
         messagebox.showerror(
             "Error", "La fecha debe tener el formato YYYY-MM-DD (ejemplo: 2000-01-15)"
@@ -251,26 +326,13 @@ def agregar_alumno():
         return
 
     try:
-        # Manejar la foto si se seleccionó una
+        # Convertir la foto a BLOB si se seleccionó una
+        foto_blob = None
         if foto_seleccionada:
-            # Crear el directorio de fotos solo si no existe y se va a guardar una foto
-            if not os.path.exists(fotos_dir):
-                os.makedirs(fotos_dir)
-
-            # Crear nombre para la foto usando la matrícula
-            extension = os.path.splitext(foto_seleccionada)[1].lower()
-            if extension not in [".jpg", ".jpeg", ".png", ".bmp", ".gif"]:
-                extension = ".jpg"  # Extensión por defecto
-
-            nombre_foto = f"{matricula}{extension}"
-            ruta_destino = os.path.join(fotos_dir, nombre_foto)
-
-            try:
-                # Copiar la foto al directorio de fotos
-                shutil.copy2(foto_seleccionada, ruta_destino)
-            except Exception as e:
+            foto_blob = convertir_imagen_a_blob(foto_seleccionada)
+            if foto_blob is None:
                 messagebox.showwarning(
-                    "Advertencia", f"No se pudo copiar la foto: {str(e)}"
+                    "Advertencia", "No se pudo procesar la imagen seleccionada"
                 )
 
         if editando:
@@ -280,15 +342,18 @@ def agregar_alumno():
                 messagebox.showerror("Error", f"La matrícula {matricula} ya existe.")
                 return
 
+            # Solo pasar foto_blob si se seleccionó una nueva foto
             actualizar_alumno(
                 matricula_original,
                 matricula,
                 nombre,
                 apellido,
+                curp,
                 fecha_nac,
                 sexo,
                 direccion,
                 carrera,
+                foto_blob,  # Pasar foto_blob (puede ser None)
             )
             messagebox.showinfo("Éxito", "Alumno actualizado correctamente.")
 
@@ -303,7 +368,15 @@ def agregar_alumno():
                 return
 
             insertar_alumno(
-                matricula, nombre, apellido, fecha_nac, sexo, direccion, carrera
+                matricula,
+                nombre,
+                apellido,
+                curp,
+                fecha_nac,
+                sexo,
+                direccion,
+                carrera,
+                foto_blob,
             )
             messagebox.showinfo("Éxito", "Alumno agregado correctamente.")
 
@@ -333,13 +406,14 @@ def editar_alumno():
             entry_matricula.insert(0, alumno[0])
             entry_nombre.insert(0, alumno[1])
             entry_apellido.insert(0, alumno[2])
-            entry_fecha_nac.insert(0, alumno[3])
-            sexo_var.set(alumno[4])
-            cbb_direccion.set(alumno[5])
+            entry_curp.insert(0, alumno[3])
+            entry_fecha_nac.insert(0, alumno[4])
+            sexo_var.set(alumno[5])
+            cbb_direccion.set(alumno[6])
 
-            if alumno[5] in carreras_por_direccion:
-                cbb_carrera["values"] = carreras_por_direccion[alumno[5]]
-                cbb_carrera.set(alumno[6])
+            if alumno[6] in carreras_por_direccion:
+                cbb_carrera["values"] = carreras_por_direccion[alumno[6]]
+                cbb_carrera.set(alumno[7])
 
             editando = True
             matricula_original = alumno[0]
@@ -416,11 +490,12 @@ def generar_historial_academico():
         # Datos del alumno
         datos_alumno = {
             "nombre": f"{alumno[1]} {alumno[2]}",  # nombre + apellido
-            "curp": "CURP123456789",  # Ejemplo, debes agregarlo a tu BD
+            "curp": alumno[3],  # CURP en posición 3
             "matricula": alumno[0],
-            "sexo": alumno[4],
-            "carrera": alumno[6],
-            "direccion": alumno[5],
+            "sexo": alumno[5],
+            "carrera": alumno[7],
+            "direccion": alumno[6],
+            "foto": alumno[8] if len(alumno) > 8 else None,
         }
 
         # Obtener calificaciones reales de la base de datos
@@ -579,14 +654,19 @@ def generar_historial_academico():
         elements.append(Paragraph("DATOS DEL ESTUDIANTE", subtitle_style))
         elements.append(Spacer(1, 15))
 
-        # Buscar foto del estudiante con diferentes extensiones
-        foto_path = None
-        extensiones = [".jpg", ".jpeg", ".png", ".bmp", ".gif"]
-        for ext in extensiones:
-            ruta_foto = os.path.join(fotos_dir, f"{datos_alumno['matricula']}{ext}")
-            if os.path.exists(ruta_foto):
-                foto_path = ruta_foto
-                break
+        # Obtener foto desde la base de datos
+        foto_blob = datos_alumno["foto"]
+        print(
+            f"Foto blob para matrícula {datos_alumno['matricula']}: {foto_blob is not None}"
+        )
+        if foto_blob:
+            print(f"Tamaño foto blob: {len(foto_blob)} bytes")
+
+        foto_temp_path = (
+            crear_imagen_temp_desde_blob(foto_blob, datos_alumno["matricula"])
+            if foto_blob
+            else None
+        )
 
         # Tabla de datos del estudiante con 2 columnas (etiqueta | valor)
         # Estilo para textos largos que se ajusten automáticamente
@@ -632,48 +712,81 @@ def generar_historial_academico():
         ]
 
         # Crear tabla principal que incluya foto y datos
-        if foto_path:
+        if foto_temp_path:
             # Si hay foto, crear tabla con foto a la izquierda y datos a la derecha
-            foto_img = ReportLabImage(foto_path, width=1.3 * inch, height=1.7 * inch)
-
-            tabla_datos = Table(
-                datos_filas,
-                colWidths=[1.8 * inch, 4.2 * inch],
-            )
-            tabla_datos.setStyle(
-                TableStyle(
-                    [
-                        # Columna izquierda (etiquetas) - sin negrita
-                        ("FONTNAME", (0, 0), (0, -1), "Helvetica"),
-                        ("FONTSIZE", (0, 0), (0, -1), 11),
-                        ("ALIGN", (0, 0), (0, -1), "LEFT"),
-                        # Columna derecha - los Paragraph ya tienen su estilo
-                        ("ALIGN", (1, 0), (1, -1), "LEFT"),
-                        # Estilo general
-                        ("VALIGN", (0, 0), (-1, -1), "TOP"),
-                        ("TEXTCOLOR", (0, 0), (-1, -1), colors.black),
-                        ("LEFTPADDING", (0, 0), (-1, -1), 10),
-                        ("RIGHTPADDING", (0, 0), (-1, -1), 10),
-                        ("TOPPADDING", (0, 0), (-1, -1), 3),
-                        ("BOTTOMPADDING", (0, 0), (-1, -1), 3),
-                    ]
+            try:
+                foto_img = ReportLabImage(
+                    foto_temp_path, width=1.3 * inch, height=1.7 * inch
                 )
-            )
+            except Exception as e:
+                print(f"Error al cargar imagen para PDF: {e}")
+                foto_img = None
 
-            # Crear tabla principal con foto y datos
-            tabla_principal = Table(
-                [[foto_img, tabla_datos]], colWidths=[1.5 * inch, 6.0 * inch]
-            )
-            tabla_principal.setStyle(
-                TableStyle(
-                    [
-                        ("VALIGN", (0, 0), (-1, -1), "TOP"),
-                        ("LEFTPADDING", (0, 0), (-1, -1), 5),
-                        ("RIGHTPADDING", (0, 0), (-1, -1), 5),
-                    ]
+            if foto_img:
+                tabla_datos = Table(
+                    datos_filas,
+                    colWidths=[1.8 * inch, 4.2 * inch],
                 )
-            )
-            elements.append(tabla_principal)
+                tabla_datos.setStyle(
+                    TableStyle(
+                        [
+                            # Columna izquierda (etiquetas) - sin negrita
+                            ("FONTNAME", (0, 0), (0, -1), "Helvetica"),
+                            ("FONTSIZE", (0, 0), (0, -1), 11),
+                            ("ALIGN", (0, 0), (0, -1), "LEFT"),
+                            # Columna derecha - los Paragraph ya tienen su estilo
+                            ("ALIGN", (1, 0), (1, -1), "LEFT"),
+                            # Estilo general
+                            ("VALIGN", (0, 0), (-1, -1), "TOP"),
+                            ("TEXTCOLOR", (0, 0), (-1, -1), colors.black),
+                            ("LEFTPADDING", (0, 0), (-1, -1), 10),
+                            ("RIGHTPADDING", (0, 0), (-1, -1), 10),
+                            ("TOPPADDING", (0, 0), (-1, -1), 3),
+                            ("BOTTOMPADDING", (0, 0), (-1, -1), 3),
+                        ]
+                    )
+                )
+
+                # Crear tabla principal con foto y datos
+                tabla_principal = Table(
+                    [[foto_img, tabla_datos]], colWidths=[1.5 * inch, 6.0 * inch]
+                )
+                tabla_principal.setStyle(
+                    TableStyle(
+                        [
+                            ("VALIGN", (0, 0), (-1, -1), "TOP"),
+                            ("LEFTPADDING", (0, 0), (-1, -1), 5),
+                            ("RIGHTPADDING", (0, 0), (-1, -1), 5),
+                        ]
+                    )
+                )
+                elements.append(tabla_principal)
+            else:
+                # Si hubo error al cargar la imagen, usar tabla normal
+                tabla_datos = Table(
+                    datos_filas,
+                    colWidths=[1.8 * inch, 4.2 * inch],
+                )
+                tabla_datos.setStyle(
+                    TableStyle(
+                        [
+                            # Columna izquierda (etiquetas) - sin negrita
+                            ("FONTNAME", (0, 0), (0, -1), "Helvetica"),
+                            ("FONTSIZE", (0, 0), (0, -1), 11),
+                            ("ALIGN", (0, 0), (0, -1), "LEFT"),
+                            # Columna derecha - los Paragraph ya tienen su estilo
+                            ("ALIGN", (1, 0), (1, -1), "LEFT"),
+                            # Estilo general
+                            ("VALIGN", (0, 0), (-1, -1), "TOP"),
+                            ("TEXTCOLOR", (0, 0), (-1, -1), colors.black),
+                            ("LEFTPADDING", (0, 0), (-1, -1), 10),
+                            ("RIGHTPADDING", (0, 0), (-1, -1), 10),
+                            ("TOPPADDING", (0, 0), (-1, -1), 3),
+                            ("BOTTOMPADDING", (0, 0), (-1, -1), 3),
+                        ]
+                    )
+                )
+                elements.append(tabla_datos)
         else:
             # Si no hay foto, usar tabla normal
             tabla_datos = Table(
@@ -781,6 +894,13 @@ def generar_historial_academico():
         # Generar el PDF
         doc.build(elements)
 
+        # Limpiar archivo temporal de imagen si existe
+        if foto_temp_path and os.path.exists(foto_temp_path):
+            try:
+                os.remove(foto_temp_path)
+            except Exception as e:
+                print(f"Error al eliminar archivo temporal: {e}")
+
         messagebox.showinfo(
             "Éxito", f"Historial académico generado correctamente:\n{ruta_archivo}"
         )
@@ -793,6 +913,16 @@ def generar_historial_academico():
             os.startfile(ruta_archivo)  # Windows
 
     except Exception as e:
+        # Limpiar archivo temporal de imagen si existe (en caso de error también)
+        if (
+            "foto_temp_path" in locals()
+            and foto_temp_path
+            and os.path.exists(foto_temp_path)
+        ):
+            try:
+                os.remove(foto_temp_path)
+            except Exception:
+                pass
         messagebox.showerror(
             "Error", f"Error al generar el historial académico: {str(e)}"
         )
@@ -1022,7 +1152,7 @@ def gestionar_calificaciones():
 
 
 frame_botones = tk.Frame(frame)
-frame_botones.grid(row=8, column=0, columnspan=5, pady=10)
+frame_botones.grid(row=9, column=0, columnspan=5, pady=10)
 
 btn_agregar = tk.Button(frame_botones, text="Agregar Alumno", command=agregar_alumno)
 btn_agregar.pack(side="left", padx=5)
@@ -1058,9 +1188,9 @@ btn_calificaciones = tk.Button(
 btn_calificaciones.pack(side="left", padx=5)
 
 frm_tabla = tk.Frame(root)
-frm_tabla.grid(row=9, column=0, padx=10, pady=10, sticky="nsew")
+frm_tabla.grid(row=10, column=0, padx=10, pady=10, sticky="nsew")
 
-root.grid_rowconfigure(9, weight=1)
+root.grid_rowconfigure(10, weight=1)
 root.grid_columnconfigure(0, weight=1)
 
 tabla = ttk.Treeview(
@@ -1069,6 +1199,7 @@ tabla = ttk.Treeview(
         "Matricula",
         "Nombre",
         "Apellido",
+        "CURP",
         "Fecha_Nac",
         "Sexo",
         "Direccion",
@@ -1079,6 +1210,7 @@ tabla = ttk.Treeview(
 tabla.heading("Matricula", text="Matrícula")
 tabla.heading("Nombre", text="Nombre")
 tabla.heading("Apellido", text="Apellido")
+tabla.heading("CURP", text="CURP")
 tabla.heading("Fecha_Nac", text="Fecha Nac.")
 tabla.heading("Sexo", text="Sexo")
 tabla.heading("Direccion", text="Dirección")
@@ -1087,6 +1219,7 @@ tabla.heading("Carrera", text="Carrera")
 tabla.column("Matricula", width=100)
 tabla.column("Nombre", width=120)
 tabla.column("Apellido", width=120)
+tabla.column("CURP", width=140)
 tabla.column("Fecha_Nac", width=100)
 tabla.column("Sexo", width=80)
 tabla.column("Direccion", width=200)
