@@ -697,7 +697,7 @@ def generar_historial_academico():
             [
                 "Matrícula:",
                 Paragraph(
-                    f"<b>{datos_alumno['matricula']}</b>                              Sexo: <b>{datos_alumno['sexo']}</b>",
+                    f"<b>{datos_alumno['matricula']}</b>                                                            Sexo: <b>{datos_alumno['sexo']}</b>",
                     matricula_sexo_style,
                 ),
             ],
