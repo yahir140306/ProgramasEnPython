@@ -651,7 +651,7 @@ def generar_historial_academico():
             textColor=colors.black,  # Cambiado de darkblue a black
             fontName="Helvetica-Bold",  # Agregado para negritas
         )
-        elements.append(Paragraph("DATOS DEL ESTUDIANTE", subtitle_style))
+        elements.append(Paragraph("Datos del estudiante", subtitle_style))
         elements.append(Spacer(1, 15))
 
         # Obtener foto desde la base de datos
@@ -692,7 +692,7 @@ def generar_historial_academico():
 
         datos_filas = [
             ["Nombre:", Paragraph(datos_alumno["nombre"], texto_style)],
-            ["CURP:", Paragraph(datos_alumno["curp"], texto_style)],
+            ["Curp:", Paragraph(datos_alumno["curp"], texto_style)],
             # Matrícula y Sexo en la misma fila
             [
                 "Matrícula:",
@@ -1199,7 +1199,7 @@ tabla = ttk.Treeview(
         "Matricula",
         "Nombre",
         "Apellido",
-        "CURP",
+        "Curp",
         "Fecha_Nac",
         "Sexo",
         "Direccion",
@@ -1210,7 +1210,7 @@ tabla = ttk.Treeview(
 tabla.heading("Matricula", text="Matrícula")
 tabla.heading("Nombre", text="Nombre")
 tabla.heading("Apellido", text="Apellido")
-tabla.heading("CURP", text="CURP")
+tabla.heading("Curp", text="Curp")
 tabla.heading("Fecha_Nac", text="Fecha Nac.")
 tabla.heading("Sexo", text="Sexo")
 tabla.heading("Direccion", text="Dirección")
@@ -1219,7 +1219,7 @@ tabla.heading("Carrera", text="Carrera")
 tabla.column("Matricula", width=100)
 tabla.column("Nombre", width=120)
 tabla.column("Apellido", width=120)
-tabla.column("CURP", width=140)
+tabla.column("Curp", width=140)
 tabla.column("Fecha_Nac", width=100)
 tabla.column("Sexo", width=80)
 tabla.column("Direccion", width=200)
